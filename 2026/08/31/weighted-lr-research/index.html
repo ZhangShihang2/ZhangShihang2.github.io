@@ -1,0 +1,735 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Weighted Logistic Regression 调查报告 | ZhangShihang's Blog</title><meta name="author" content="ZhangShihang2"><meta name="copyright" content="ZhangShihang2"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="YouTube 推荐系统中 Weighted LR 的原理、推导、Serving 方式与演进">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Weighted Logistic Regression 调查报告">
+<meta property="og:url" content="https://zhangshihang2.github.io/2026/08/31/weighted-lr-research/index.html">
+<meta property="og:site_name" content="ZhangShihang&#39;s Blog">
+<meta property="og:description" content="YouTube 推荐系统中 Weighted LR 的原理、推导、Serving 方式与演进">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zhangshihang2.github.io/img/butterfly-icon.png">
+<meta property="article:published_time" content="2026-08-31T13:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-31T13:49:13.530Z">
+<meta property="article:author" content="ZhangShihang2">
+<meta property="article:tag" content="Weighted LR">
+<meta property="article:tag" content="YouTube">
+<meta property="article:tag" content="推荐系统">
+<meta property="article:tag" content="时长建模">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zhangshihang2.github.io/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Weighted Logistic Regression 调查报告",
+  "url": "https://zhangshihang2.github.io/2026/08/31/weighted-lr-research/",
+  "image": "https://zhangshihang2.github.io/img/butterfly-icon.png",
+  "datePublished": "2026-08-31T13:00:00.000Z",
+  "dateModified": "2026-08-31T13:49:13.530Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ZhangShihang2",
+      "url": "https://zhangshihang2.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://zhangshihang2.github.io/2026/08/31/weighted-lr-research/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.7.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Weighted Logistic Regression 调查报告',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ZhangShihang's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">Weighted Logistic Regression 调查报告</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">Weighted Logistic Regression 调查报告</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-31T13:00:00.000Z" title="发表于 2026-08-31 21:00:00">2026-08-31</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-31T13:49:13.530Z" title="更新于 2026-08-31 21:49:13">2026-08-31</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F/">推荐系统</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="Weighted-Logistic-Regression-调查报告"><a href="#Weighted-Logistic-Regression-调查报告" class="headerlink" title="Weighted Logistic Regression 调查报告"></a>Weighted Logistic Regression 调查报告</h1><blockquote>
+<p>调查主题：YouTube 推荐系统中 Weighted LR 的原理、推导、Serving 方式与应用</p>
+</blockquote>
+<hr>
+<h2 id="一、问题背景"><a href="#一、问题背景" class="headerlink" title="一、问题背景"></a>一、问题背景</h2><p>YouTube 深度学习推荐系统的 Ranking Model 输出层采用了 <strong>Weighted Logistic Regression</strong>，且在模型 Serving 时没有使用标准的 sigmoid 函数，而是使用了 $e^{Wx+b}$ 这一指数形式。这一设计引发了广泛讨论：为什么用 Weighted LR？为什么 Serving 时用指数形式而非 sigmoid？预测的到底是什么？</p>
+<p><strong>来源</strong>：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/61827629">揭开YouTube深度推荐系统模型Serving之谜 — 王喆的机器学习笔记</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/hellojamest/p/11871108.html">weighted—LR的理解与推广 — Jamest (博客园)</a></li>
+</ul>
+<hr>
+<h2 id="二、LR-基础推导"><a href="#二、LR-基础推导" class="headerlink" title="二、LR 基础推导"></a>二、LR 基础推导</h2><p>逻辑回归假设数据服从<strong>伯努利分布</strong>，事件发生概率为 $p$，不发生概率为 $1-p$。</p>
+<h3 id="2-1-Odds（几率比）"><a href="#2-1-Odds（几率比）" class="headerlink" title="2.1 Odds（几率比）"></a>2.1 Odds（几率比）</h3><p>$$Odds &#x3D; \frac{p}{1-p}$$</p>
+<p>Odds 表示事件发生与不发生的比值。</p>
+<h3 id="2-2-Logit-函数与-LR-的由来"><a href="#2-2-Logit-函数与-LR-的由来" class="headerlink" title="2.2 Logit 函数与 LR 的由来"></a>2.2 Logit 函数与 LR 的由来</h3><p>对 Odds 取自然对数，并令其等于线性回归函数：</p>
+<p>$$\ln\left(\frac{p}{1-p}\right) &#x3D; \theta^T x \quad \Rightarrow \quad \frac{p}{1-p} &#x3D; e^{\theta^T x}$$</p>
+<p>$$\Rightarrow p &#x3D; \frac{1}{1+e^{-\theta^T x}} &#x3D; \text{sigmoid}(\theta^T x)$$</p>
+<p>这就是逻辑回归的由来：<strong>sigmoid 函数的选择不是任意的，而是由伯努利分布 + logit 链接函数推导而来</strong>。</p>
+<h3 id="2-3-关键转换"><a href="#2-3-关键转换" class="headerlink" title="2.3 关键转换"></a>2.3 关键转换</h3><p>$$\ln(Odds) &#x3D; \theta^T x \quad \Rightarrow \quad Odds &#x3D; e^{\theta^T x}$$</p>
+<blockquote>
+<p><strong>这一步是理解 YouTube Serving 函数的关键</strong>：$e^{Wx+b}$ 计算的正是 Odds，而非概率 $p$。</p>
+</blockquote>
+<p><strong>来源</strong>：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/61827629">揭开YouTube深度推荐系统模型Serving之谜 — 王喆的机器学习笔记</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/hellojamest/p/11871108.html">weighted—LR的理解与推广 — Jamest (博客园)</a></li>
+</ul>
+<hr>
+<h2 id="三、Weighted-LR-的核心思想"><a href="#三、Weighted-LR-的核心思想" class="headerlink" title="三、Weighted LR 的核心思想"></a>三、Weighted LR 的核心思想</h2><h3 id="3-1-权重设计"><a href="#3-1-权重设计" class="headerlink" title="3.1 权重设计"></a>3.1 权重设计</h3><p>YouTube 论文中的权重设计：</p>
+<p>$$w(x, y) &#x3D; \begin{cases} T_i \text{（观看时长）} &amp; \text{当 } y &#x3D; 1 \text{（正样本，点击）} \ 1 &amp; \text{当 } y &#x3D; 0 \text{（负样本，未点击）} \end{cases}$$</p>
+<p><strong>来源</strong>：<a target="_blank" rel="noopener" href="http://srome.github.io/Predicting-Watch-Time-Like-YouTube-With-Weighted-Logistic-Regression/">Predicting Watch Time like YouTube via Weighted Logistic Regression — srome.github.io</a></p>
+<h3 id="3-2-加权后-Odds-的变化"><a href="#3-2-加权后-Odds-的变化" class="headerlink" title="3.2 加权后 Odds 的变化"></a>3.2 加权后 Odds 的变化</h3><p>正样本权重 $w_i$ 的加入会让正样本发生的几率变成原来的 $w_i$ 倍：</p>
+<p>$$Odds(i) &#x3D; \frac{w_i \cdot p}{1 - w_i \cdot p}$$</p>
+<p>其中 $p$ 为用户打开视频的概率（即 pCTR），$w_i &#x3D; T_i$ 为观看时长。</p>
+<h3 id="3-3-关键近似：pCTR-很小时"><a href="#3-3-关键近似：pCTR-很小时" class="headerlink" title="3.3 关键近似：pCTR 很小时"></a>3.3 关键近似：pCTR 很小时</h3><p>在视频推荐场景中，用户打开视频的概率 $p$ 往往是一个很小的值，因此：</p>
+<p>$$Odds(i) &#x3D; \frac{w_i \cdot p}{1 - w_i \cdot p} \approx w_i \cdot p &#x3D; T_i \cdot p &#x3D; E(T_i)$$</p>
+<p><strong>真相大白</strong>：$T_i \cdot p$ 就是用户观看某视频的<strong>期望时长</strong>！</p>
+<p><strong>来源</strong>：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/61827629">揭开YouTube深度推荐系统模型Serving之谜 — 王喆的机器学习笔记</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/hellojamest/p/11871108.html">weighted—LR的理解与推广 — Jamest (博客园)</a></li>
+</ul>
+<hr>
+<h2 id="四、形式化数学推导"><a href="#四、形式化数学推导" class="headerlink" title="四、形式化数学推导"></a>四、形式化数学推导</h2><h3 id="4-1-从加权数据分布出发"><a href="#4-1-从加权数据分布出发" class="headerlink" title="4.1 从加权数据分布出发"></a>4.1 从加权数据分布出发</h3><p>引入采样权重后，训练数据服从新的分布 $q$：</p>
+<p>$$q(x, y) &#x3D; \frac{w(x, y) \cdot p(x, y)}{Z}$$</p>
+<p>其中 $Z$ 为归一化常数（在训练中可被学习率吸收，不影响结果）。</p>
+<h3 id="4-2-加权后的个体预测"><a href="#4-2-加权后的个体预测" class="headerlink" title="4.2 加权后的个体预测"></a>4.2 加权后的个体预测</h3><p>加权后，个体级别的 log-odds 变为：</p>
+<p>$$\frac{q(y&#x3D;1|x)}{q(y&#x3D;0|x)} &#x3D; \frac{w(x,1) \cdot p(y&#x3D;1|x)}{p(y&#x3D;0|x)}$$</p>
+<p>这意味着模型学习的是 <strong>log(观看时长 × pCTR)</strong>：</p>
+<p>$$e^{x^T \beta} &#x3D; \frac{w(x,1) \cdot p(y&#x3D;1|x)}{p(y&#x3D;0|x)} \approx w(x,1) \cdot p(y&#x3D;1|x)$$</p>
+<p>即模型预测的是<strong>单个用户的期望观看时长</strong>。</p>
+<h3 id="4-3-全局-Odds-与期望观看时长的关系"><a href="#4-3-全局-Odds-与期望观看时长的关系" class="headerlink" title="4.3 全局 Odds 与期望观看时长的关系"></a>4.3 全局 Odds 与期望观看时长的关系</h3><p>$$\frac{q(y&#x3D;1)}{q(y&#x3D;0)} &#x3D; \frac{\sum_x w(x,1) \cdot p(y&#x3D;1|x) \cdot p(x)}{p(y&#x3D;0)} &#x3D; \frac{1}{N} \sum_{\text{users}} (\text{expected watch time}) &#x3D; E(w)$$</p>
+<p>当 $p(x) \approx 1&#x2F;N$（均匀分布假设）时，全局 Odds 等于<strong>所有用户的期望观看时长之和除以 N</strong>，即期望观看时间。</p>
+<p><strong>来源</strong>：<a target="_blank" rel="noopener" href="http://srome.github.io/Predicting-Watch-Time-Like-YouTube-With-Weighted-Logistic-Regression/">Predicting Watch Time like YouTube via Weighted Logistic Regression — srome.github.io</a></p>
+<hr>
+<h2 id="五、Serving-方式"><a href="#五、Serving-方式" class="headerlink" title="五、Serving 方式"></a>五、Serving 方式</h2><h3 id="5-1-为什么用-e-Wx-b-而非-sigmoid"><a href="#5-1-为什么用-e-Wx-b-而非-sigmoid" class="headerlink" title="5.1 为什么用 $e^{Wx+b}$ 而非 sigmoid"></a>5.1 为什么用 $e^{Wx+b}$ 而非 sigmoid</h3><table>
+<thead>
+<tr>
+<th>方式</th>
+<th>公式</th>
+<th>计算的是</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>标准 LR Serving</td>
+<td>$\text{sigmoid}(Wx+b) &#x3D; \frac{1}{1+e^{-(Wx+b)}}$</td>
+<td>概率 $p$</td>
+</tr>
+<tr>
+<td>YouTube Serving</td>
+<td>$e^{Wx+b}$</td>
+<td><strong>Odds</strong> ≈ 期望观看时长</td>
+</tr>
+</tbody></table>
+<p>由于 Weighted LR 训练后，$e^{Wx+b}$ 等于加权后的 Odds，而加权后的 Odds 近似等于期望观看时长，因此 Serving 时直接使用指数形式即可。</p>
+<h3 id="5-2-排序而非精确值"><a href="#5-2-排序而非精确值" class="headerlink" title="5.2 排序而非精确值"></a>5.2 排序而非精确值</h3><p>Serving 时只需关注<strong>相对排序</strong>（哪个视频期望观看时长更长），不关注绝对值，因此用 $e^{Wx+b}$ 作为排序指标完全合理。</p>
+<p><strong>来源</strong>：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/61827629">揭开YouTube深度推荐系统模型Serving之谜 — 王喆的机器学习笔记</a></li>
+<li><a target="_blank" rel="noopener" href="http://srome.github.io/Predicting-Watch-Time-Like-YouTube-With-Weighted-Logistic-Regression/">Predicting Watch Time like YouTube via Weighted Logistic Regression — srome.github.io</a></li>
+</ul>
+<hr>
+<h2 id="六、前提条件与局限性"><a href="#六、前提条件与局限性" class="headerlink" title="六、前提条件与局限性"></a>六、前提条件与局限性</h2><h3 id="6-1-核心前提：pCTR-必须很小"><a href="#6-1-核心前提：pCTR-必须很小" class="headerlink" title="6.1 核心前提：pCTR 必须很小"></a>6.1 核心前提：pCTR 必须很小</h3><p>Weighted LR 的 $Odds \approx E(T_i)$ 近似<strong>仅在 pCTR 很小时成立</strong>。当 pCTR 较大时（如 50%），近似严重失效。</p>
+<p><strong>数值实验验证</strong>（来自 srome.github.io）：</p>
+<table>
+<thead>
+<tr>
+<th>pCTR</th>
+<th>估计观看时长</th>
+<th>$e^{\text{bias}}$</th>
+<th>是否吻合</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0.1%（小）</td>
+<td>0.0582</td>
+<td>0.0582</td>
+<td>✅ 吻合</td>
+</tr>
+<tr>
+<td>50%（大）</td>
+<td>6.28</td>
+<td>12.61</td>
+<td>❌ 严重偏离</td>
+</tr>
+</tbody></table>
+<h3 id="6-2-为什么不直接回归预测时长（MSE-loss-的问题）"><a href="#6-2-为什么不直接回归预测时长（MSE-loss-的问题）" class="headerlink" title="6.2 为什么不直接回归预测时长（MSE loss 的问题）"></a>6.2 为什么不直接回归预测时长（MSE loss 的问题）</h3><p>直接用 MSE loss 回归预测播放时长存在两个问题：</p>
+<ol>
+<li><strong>分布假设</strong>：MSE 假设预估 label 和误差项符合<strong>正态分布</strong>，但播放时长通常服从<strong>长尾分布</strong>（如几何分布），分布假设不匹配</li>
+<li><strong>离群值敏感</strong>：MSE 对离群值（超长观看时长）非常敏感，容易被极端值拉偏</li>
+<li><strong>分类问题比回归问题更易求解</strong>，预测准确率更高</li>
+</ol>
+<p>Weighted LR 将时长预测巧妙转化为分类问题，兼顾了准确性和业务目标。</p>
+<p><strong>来源</strong>：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/xumaomao/p/15207305.html">Weighted LR（WCE Weighted cross entropy）— 博客园（AI_Engineer）</a></li>
+<li><a target="_blank" rel="noopener" href="http://srome.github.io/Predicting-Watch-Time-Like-YouTube-With-Weighted-Logistic-Regression/">Predicting Watch Time like YouTube via Weighted Logistic Regression — srome.github.io</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/hellojamest/p/11871108.html">weighted—LR的理解与推广 — Jamest (博客园)</a></li>
+</ul>
+<h3 id="6-3-WCE-损失函数推导"><a href="#6-3-WCE-损失函数推导" class="headerlink" title="6.3 WCE 损失函数推导"></a>6.3 WCE 损失函数推导</h3><p>YouTube 论文提出的 WCE（Weighted Cross Entropy）损失函数，将正样本的 label 置为 $t_i$（观看时长），负样本 label 为 0：</p>
+<p>$C &#x3D; -\sum_{i&#x3D;1}^{n} \left( t_i \cdot y_i \cdot \log f(x_i) + (1 - y_i) \cdot \log(1 - f(x_i)) \right)$</p>
+<p>其中 $f(x) &#x3D; \frac{1}{1+e^{-\theta x}}$，推导 Odds：</p>
+<p>$\frac{f(x)}{1 - f(x)} &#x3D; e^{wx} &#x3D; \frac{\sum_{i&#x3D;1}^{k} t_i}{n - k} \approx E(t)$</p>
+<p>其中 $n$ 是总样本数，$k$ 是正样本数。得出可以用 $e^{wx}$ 来表示预估的观看时长。</p>
+<p><strong>来源</strong>：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/xumaomao/p/15207305.html">Weighted LR（WCE Weighted cross entropy）— 博客园（AI_Engineer）</a></p>
+<h3 id="6-4-梯度不对称问题（WCE-的重要局限）"><a href="#6-4-梯度不对称问题（WCE-的重要局限）" class="headerlink" title="6.4 梯度不对称问题（WCE 的重要局限）"></a>6.4 梯度不对称问题（WCE 的重要局限）</h3><p>WCE loss 在<strong>低估</strong>和<strong>高估</strong>时梯度不对称，容易导致模型高估。</p>
+<p>改进方法：为每一个正例增加一个负例，用 $y$ 表示时长，loss 变为：</p>
+<p>$C &#x3D; -\sum_{i&#x3D;1}^{n} \left( y_i \cdot \log f(x_i) + \log(1 - f(x_i)) \right)$</p>
+<p>令 $y’_i &#x3D; e^{\theta x_i}$，对 $y’_i$ 求梯度：</p>
+<p>$\frac{\partial C}{\partial y’_i} &#x3D; \frac{y’_i - y_i}{y’_i \cdot (1 + y’_i)}$</p>
+<table>
+<thead>
+<tr>
+<th>情形</th>
+<th>梯度大小</th>
+<th>影响</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>低估（$y’ &lt; y$）</td>
+<td><strong>梯度很大</strong></td>
+<td>快速修正低估</td>
+</tr>
+<tr>
+<td>高估（$y’ &gt; y$）</td>
+<td><strong>梯度很小</strong></td>
+<td>高估难以修正</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>结论</strong>：低估时梯度大、高估时梯度小，模型倾向于<strong>高估</strong>观看时长。这是 WCE 在实际应用中需要注意的重要局限。</p>
+</blockquote>
+<p><strong>来源</strong>：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/xumaomao/p/15207305.html">Weighted LR（WCE Weighted cross entropy）— 博客园（AI_Engineer）</a></p>
+<h3 id="6-5-几何分布假设"><a href="#6-5-几何分布假设" class="headerlink" title="6.5 几何分布假设"></a>6.5 几何分布假设</h3><p>WCE 实际上假设了样本分布服从<strong>几何分布</strong>（Geometric Distribution）。如果实际样本分布不是几何分布（例如观看时长服从其他长尾分布），可能导致效果不好。</p>
+<blockquote>
+<p>使用前需验证数据分布是否与几何分布匹配，否则考虑其他建模方式。</p>
+</blockquote>
+<p><strong>来源</strong>：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/xumaomao/p/15207305.html">Weighted LR（WCE Weighted cross entropy）— 博客园（AI_Engineer）</a></p>
+<hr>
+<h2 id="七、训练方法"><a href="#七、训练方法" class="headerlink" title="七、训练方法"></a>七、训练方法</h2><p>Weighted LR 有两种训练方式：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>说明</th>
+<th>优劣</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>重复采样</strong></td>
+<td>正样本按 weight 重复 sampling 后训练</td>
+<td>简单，但增加样本量和训练时间</td>
+</tr>
+<tr>
+<td><strong>梯度加权</strong></td>
+<td>在梯度下降中改变梯度的 weight</td>
+<td>✅ <strong>更推荐</strong>，减少样本处理量和梯度更新次数</td>
+</tr>
+</tbody></table>
+<p><strong>来源</strong>：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/61827629">揭开YouTube深度推荐系统模型Serving之谜 — 王喆的机器学习笔记</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/hellojamest/p/11871108.html">weighted—LR的理解与推广 — Jamest (博客园)</a></li>
+</ul>
+<hr>
+<h2 id="八、推广：当-pCTR-不可忽略时"><a href="#八、推广：当-pCTR-不可忽略时" class="headerlink" title="八、推广：当 pCTR 不可忽略时"></a>八、推广：当 pCTR 不可忽略时</h2><p>当业务场景中 pCTR 达到 20% 甚至更高时，不能忽略 $N_{pos}$ 的近似。</p>
+<h3 id="8-1-问题分析"><a href="#8-1-问题分析" class="headerlink" title="8.1 问题分析"></a>8.1 问题分析</h3><p>原始 Odds 近似为：</p>
+<p>$$\frac{\sum_{i&#x3D;1}^{N_{pos}} w_i}{N_{neg}} \approx \frac{\sum_{i&#x3D;1}^{N_{pos}} w_i}{N_{neg} + N_{pos}}$$</p>
+<p>当 $N_{pos}$ 相对 $N_{neg}$ 不可忽略时，分母需要补上 $N_{pos}$。</p>
+<h3 id="8-2-解决方案"><a href="#8-2-解决方案" class="headerlink" title="8.2 解决方案"></a>8.2 解决方案</h3><p>在负样本中<strong>随机采样 $N_{pos}$ 个样本</strong>填充分母，修正近似误差。</p>
+<h3 id="8-3-采样偏差修正"><a href="#8-3-采样偏差修正" class="headerlink" title="8.3 采样偏差修正"></a>8.3 采样偏差修正</h3><p>当训练数据经过负采样（下采样）后，需要通过 <strong>inverse propensity scoring</strong> 修正权重：</p>
+<ul>
+<li>正样本权重：$w_i \times \frac{p_1}{\hat{p}}$（原始 pCTR &#x2F; 采样后 pCTR）</li>
+<li>负样本权重：$1 \times \frac{p_2}{\hat{p}}$</li>
+</ul>
+<p>数值实验验证：修正后估计观看时长 0.602 vs $e^{\text{bias}}$ 0.609，吻合良好。</p>
+<h3 id="8-4-为每个正例增加负例（解决近似误差）"><a href="#8-4-为每个正例增加负例（解决近似误差）" class="headerlink" title="8.4 为每个正例增加负例（解决近似误差）"></a>8.4 为每个正例增加负例（解决近似误差）</h3><p>另一种改进方法：为每一个正例增加一个负例来解决 $\frac{\sum t_i}{n-k} \approx E(t)$ 的近似问题。</p>
+<p>改进后的损失函数：</p>
+<p>$C &#x3D; -\sum_{i&#x3D;1}^{n} \left( y_i \cdot \log f(x_i) + \log(1 - f(x_i)) \right)$</p>
+<p>其中 $y_i$ 直接表示时长。这样每个正样本都配有对应的负样本，使得正负比例更均衡，近似更准确。</p>
+<blockquote>
+<p>但此方法存在梯度不对称问题（见 6.4 节），低估时梯度大、高估时梯度小，需结合实际场景权衡。</p>
+</blockquote>
+<p><strong>来源</strong>：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/xumaomao/p/15207305.html">Weighted LR（WCE Weighted cross entropy）— 博客园（AI_Engineer）</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/hellojamest/p/11871108.html">weighted—LR的理解与推广 — Jamest (博客园)</a></li>
+<li><a target="_blank" rel="noopener" href="http://srome.github.io/Predicting-Watch-Time-Like-YouTube-With-Weighted-Logistic-Regression/">Predicting Watch Time like YouTube via Weighted Logistic Regression — srome.github.io</a></li>
+</ul>
+<hr>
+<h2 id="九、时长建模的其他方案与-Weighted-LR-的演进"><a href="#九、时长建模的其他方案与-Weighted-LR-的演进" class="headerlink" title="九、时长建模的其他方案与 Weighted LR 的演进"></a>九、时长建模的其他方案与 Weighted LR 的演进</h2><p>Weighted LR 是 YouTube 论文提出的经典方法，但工业界在此基础上发展出了多种改进和替代方案。</p>
+<h3 id="9-1-Weighted-LR-的推广：GMV-场景"><a href="#9-1-Weighted-LR-的推广：GMV-场景" class="headerlink" title="9.1 Weighted LR 的推广：GMV 场景"></a>9.1 Weighted LR 的推广：GMV 场景</h3><p>Weighted LR 的思路不限于观看时长，可推广到其他业务目标：</p>
+<ul>
+<li><strong>推荐商品时</strong>，对”点击正样本”加权，权重设为该商品的<strong>历史成交金额（GMV）</strong></li>
+<li>有利于将用户喜欢且高价值的商品排序在前，增加商家利润</li>
+</ul>
+<p><strong>来源</strong>：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/1903020329921650788">时长建模总结 — 知乎</a></p>
+<h3 id="9-2-CTR-不可忽略时的具体实现"><a href="#9-2-CTR-不可忽略时的具体实现" class="headerlink" title="9.2 CTR 不可忽略时的具体实现"></a>9.2 CTR 不可忽略时的具体实现</h3><p>当 pCTR 不可忽略时，线上预估需要修正：</p>
+<p>$\text{预估时长} &#x3D; \text{odds} \times (1 - \text{ctr})$</p>
+<p>具体实现要点：</p>
+<ul>
+<li>label 是 ctr label，但时长加权，时长取<strong>根号</strong>压缩</li>
+<li>线上预估时：$(1 - \text{ctr}_q) \times e^{\text{dura-tower 输出}}$</li>
+</ul>
+<p><strong>来源</strong>：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/1903020329921650788">时长建模总结 — 知乎</a></p>
+<h3 id="9-3-回归建模方式（log2-MSE）"><a href="#9-3-回归建模方式（log2-MSE）" class="headerlink" title="9.3 回归建模方式（log2 + MSE）"></a>9.3 回归建模方式（log2 + MSE）</h3><p>除了将时长预估转为分类问题，还可以直接回归建模：</p>
+<ol>
+<li>对原始观看时长取 <strong>log2</strong> 作为 label（压缩波动范围）</li>
+<li>使用 <strong>MSE loss</strong> 对时长目标进行回归学习</li>
+<li>时长限制在 1<del>120 秒，取 log2 后范围在 0</del>7.9 之间</li>
+<li>为什么不用 log10：取值范围仅 (0, 2.1)，范围太小</li>
+</ol>
+<blockquote>
+<p>优势：对原始时长取 log2 压缩后，时长波动范围缩小，模型预估更稳定。</p>
+</blockquote>
+<p><strong>来源</strong>：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/1903020329921650788">时长建模总结 — 知乎</a></p>
+<h3 id="9-4-完播率建模"><a href="#9-4-完播率建模" class="headerlink" title="9.4 完播率建模"></a>9.4 完播率建模</h3><p>另一种时长相关目标：完播率（用户是否看完视频）。</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>说明</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>回归方法</td>
+<td>预估完播率连续值</td>
+<td>通用性强</td>
+</tr>
+<tr>
+<td>二元分类</td>
+<td>是否完播（0&#x2F;1）</td>
+<td>⚠️ 有利于短视频，不利于长视频</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>短视频天然完播率高，长视频完播率低，二元分类会偏向短视频。</p>
+</blockquote>
+<p><strong>来源</strong>：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/1903020329921650788">时长建模总结 — 知乎</a></p>
+<h3 id="9-5-时长归一化（Duration-Normalization）"><a href="#9-5-时长归一化（Duration-Normalization）" class="headerlink" title="9.5 时长归一化（Duration Normalization）"></a>9.5 时长归一化（Duration Normalization）</h3><p><strong>问题</strong>：长视频的消费时长天然更高，导致 Weighted Logloss 中长视频比重过大，偏向优化长视频。</p>
+<p><strong>方案</strong>：</p>
+<ol>
+<li>按 <strong>video duration 分桶</strong>（如 0-1 分钟、1-5 分钟等）</li>
+<li>每桶内部按消费时长分段</li>
+<li>将消费时长<strong>归一化到 0~1</strong> 范围</li>
+<li>用归一化后的值作为 label 训练</li>
+</ol>
+<p><strong>特点</strong>：</p>
+<ul>
+<li>消除视频本身长短带来的偏差</li>
+<li>可以叠加在 Weighted Logloss、CREAD、EMD 等其他方法上</li>
+<li>线上预估时需要逆操作还原真实时长</li>
+</ul>
+<blockquote>
+<p>Weighted Logloss 在归一化场景下存在理论缺陷：$e^{wx}$ 不能保证预估值在 [0,1] 范围内，需人工变换（如 sigmoid）。</p>
+</blockquote>
+<p><strong>来源</strong>：<a target="_blank" rel="noopener" href="https://mathmach.com/f5a7a06e/">推荐系统时长建模的常用方案 — mathmach.com</a></p>
+<h3 id="9-6-CREAD（快手-AAAI’24）"><a href="#9-6-CREAD（快手-AAAI’24）" class="headerlink" title="9.6 CREAD（快手 AAAI’24）"></a>9.6 CREAD（快手 AAAI’24）</h3><p>CREAD 将时长建模转化为<strong>多个有序二分类任务</strong>：</p>
+<ol>
+<li>将消费时长从小到大排序，通过 $m+1$ 个阈值分成 $m+1$ 个区间</li>
+<li>每个区间构造一个二分类任务：$y_j &#x3D; \mathbb{1}(t &gt; \text{threshold}_j)$，共 $m$ 个</li>
+<li>线上预估时通过累积概率还原时长</li>
+</ol>
+<p><strong>额外损失</strong>：</p>
+<ul>
+<li><strong>Huber loss</strong>：还原时长与真实时长的偏差</li>
+<li><strong>Hinge loss</strong>：保证二分类之间的序关系</li>
+</ul>
+<p><strong>来源</strong>：<a target="_blank" rel="noopener" href="https://mathmach.com/f5a7a06e/">推荐系统时长建模的常用方案 — mathmach.com</a></p>
+<h3 id="9-7-EMD（Earth-Mover’s-Distance）"><a href="#9-7-EMD（Earth-Mover’s-Distance）" class="headerlink" title="9.7 EMD（Earth Mover’s Distance）"></a>9.7 EMD（Earth Mover’s Distance）</h3><p>EMD 从<strong>类别间有序关系</strong>角度改进多分类：</p>
+<ul>
+<li>传统多分类中类别间无关系，但时长区间有自然顺序</li>
+<li>使用 <strong>Squared EMD Loss</strong>：真实区间附近概率应更高，向两侧平滑降低</li>
+<li>与 CREAD 类似的分桶方式，但无需额外 Huber&#x2F;Hinge loss</li>
+</ul>
+<p><strong>EMD 相比 CREAD 的优势</strong>：</p>
+<ol>
+<li>不需要额外的 Huber loss 和 Hinge loss</li>
+<li>可与 <strong>Distill Softmax</strong> 合用，效果更佳</li>
+</ol>
+<p><strong>来源</strong>：<a target="_blank" rel="noopener" href="https://mathmach.com/f5a7a06e/">推荐系统时长建模的常用方案 — mathmach.com</a></p>
+<h3 id="9-8-各方案对比总结"><a href="#9-8-各方案对比总结" class="headerlink" title="9.8 各方案对比总结"></a>9.8 各方案对比总结</h3><table>
+<thead>
+<tr>
+<th>方案</th>
+<th>核心思路</th>
+<th>优势</th>
+<th>劣势</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Weighted LR</strong></td>
+<td>时长作为正样本权重，Odds ≈ E(T)</td>
+<td>简单高效，分类转回归</td>
+<td>pCTR 须很小；梯度不对称；假设几何分布</td>
+</tr>
+<tr>
+<td><strong>log2 + MSE 回归</strong></td>
+<td>log2 压缩时长 + MSE 回归</td>
+<td>预估稳定</td>
+<td>回归问题更难求解</td>
+</tr>
+<tr>
+<td><strong>完播率建模</strong></td>
+<td>预估完播概率</td>
+<td>简单</td>
+<td>偏向短视频</td>
+</tr>
+<tr>
+<td><strong>时长归一化</strong></td>
+<td>分桶归一化消除长视频偏差</td>
+<td>消除 duration bias</td>
+<td>需逆操作还原</td>
+</tr>
+<tr>
+<td><strong>CREAD</strong></td>
+<td>多个有序二分类 + Huber + Hinge</td>
+<td>精细建模</td>
+<td>实现复杂</td>
+</tr>
+<tr>
+<td><strong>EMD</strong></td>
+<td>有序多分类 + EMD Loss</td>
+<td>无需额外损失；可叠加 Distill Softmax</td>
+<td>分桶设计敏感</td>
+</tr>
+</tbody></table>
+<h3 id="9-9-后续研究论文"><a href="#9-9-后续研究论文" class="headerlink" title="9.9 后续研究论文"></a>9.9 后续研究论文</h3><table>
+<thead>
+<tr>
+<th>论文</th>
+<th>会议</th>
+<th>来源</th>
+<th>方向</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Deconfounding Duration Bias in Watch-time Prediction</td>
+<td>KDD’22</td>
+<td><a target="_blank" rel="noopener" href="https://ar5iv.labs.arxiv.org/html/2206.06003">ar5iv</a></td>
+<td>因果消偏</td>
+</tr>
+<tr>
+<td>CREAD</td>
+<td>AAAI’24</td>
+<td>快手</td>
+<td>多有序二分类</td>
+</tr>
+<tr>
+<td>Generative Regression Based Watch Time Prediction</td>
+<td>WWW’25</td>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/html/2412.20211v1">arXiv</a></td>
+<td>生成式回归</td>
+</tr>
+<tr>
+<td>Relative Advantage Debiasing</td>
+<td>—</td>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/html/2508.11086v2">arXiv</a></td>
+<td>相对优势去偏</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="十、完整逻辑链总结"><a href="#十、完整逻辑链总结" class="headerlink" title="十、完整逻辑链总结"></a>十、完整逻辑链总结</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">伯努利分布 p</span><br><span class="line">    │</span><br><span class="line">    ▼</span><br><span class="line">Odds = p/(1-p) ──ln──→ logit = ln(Odds) = θᵀx</span><br><span class="line">    │                              │</span><br><span class="line">    ▼                              ▼</span><br><span class="line">sigmoid(θᵀx) = p              e^(θᵀx) = Odds ← YouTube Serving 函数</span><br><span class="line">                                   │</span><br><span class="line">    Weighted LR: wᵢ = Tᵢ (正样本)     │</span><br><span class="line">    │                              ▼</span><br><span class="line">    ▼                         Odds ≈ wᵢ·p = Tᵢ·p = E(Tᵢ)</span><br><span class="line">Odds(i) = wᵢp/(1-wᵢp)             │</span><br><span class="line">    │                              ▼</span><br><span class="line">    ▼                         期望观看时长 → 排序推荐</span><br><span class="line">p 很小时: ≈ wᵢ·p</span><br></pre></td></tr></table></figure>
+
+<p><strong>一句话总结</strong>：YouTube 用观看时长作为正样本权重训练 LR，使得模型输出的 Odds 近似等于期望观看时长，Serving 时直接用 $e^{Wx+b}$（即 Odds）排序，巧妙地将时长预测转化为分类问题。</p>
+<hr>
+<h2 id="十一、来源索引"><a href="#十一、来源索引" class="headerlink" title="十一、来源索引"></a>十一、来源索引</h2><table>
+<thead>
+<tr>
+<th>#</th>
+<th>来源</th>
+<th>类型</th>
+<th>链接</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>揭开YouTube深度推荐系统模型Serving之谜</td>
+<td>知乎专栏（王喆）</td>
+<td><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/61827629">https://zhuanlan.zhihu.com/p/61827629</a></td>
+</tr>
+<tr>
+<td>2</td>
+<td>Predicting Watch Time like YouTube via Weighted Logistic Regression</td>
+<td>技术博客（srome）</td>
+<td><a target="_blank" rel="noopener" href="http://srome.github.io/Predicting-Watch-Time-Like-YouTube-With-Weighted-Logistic-Regression/">http://srome.github.io/Predicting-Watch-Time-Like-YouTube-With-Weighted-Logistic-Regression/</a></td>
+</tr>
+<tr>
+<td>3</td>
+<td>weighted—LR的理解与推广</td>
+<td>博客园（Jamest）</td>
+<td><a target="_blank" rel="noopener" href="https://www.cnblogs.com/hellojamest/p/11871108.html">https://www.cnblogs.com/hellojamest/p/11871108.html</a></td>
+</tr>
+<tr>
+<td>4</td>
+<td>Deep Neural Networks for YouTube Recommendations</td>
+<td>原始论文（Covington et al., 2016）</td>
+<td>YouTube 2016 RecSys</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Weighted LR（WCE Weighted cross entropy）</td>
+<td>博客园（AI_Engineer）</td>
+<td><a target="_blank" rel="noopener" href="https://www.cnblogs.com/xumaomao/p/15207305.html">https://www.cnblogs.com/xumaomao/p/15207305.html</a></td>
+</tr>
+<tr>
+<td>6</td>
+<td>时长建模总结</td>
+<td>知乎</td>
+<td><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/1903020329921650788">https://zhuanlan.zhihu.com/p/1903020329921650788</a></td>
+</tr>
+<tr>
+<td>7</td>
+<td>推荐系统时长建模的常用方案</td>
+<td>mathmach.com</td>
+<td><a target="_blank" rel="noopener" href="https://mathmach.com/f5a7a06e/">https://mathmach.com/f5a7a06e/</a></td>
+</tr>
+<tr>
+<td>8</td>
+<td>Deconfounding Duration Bias in Watch-time Prediction</td>
+<td>KDD’22 论文</td>
+<td><a target="_blank" rel="noopener" href="https://ar5iv.labs.arxiv.org/html/2206.06003">https://ar5iv.labs.arxiv.org/html/2206.06003</a></td>
+</tr>
+<tr>
+<td>9</td>
+<td>Generative Regression Based Watch Time Prediction</td>
+<td>WWW’25 论文</td>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/html/2412.20211v1">https://arxiv.org/html/2412.20211v1</a></td>
+</tr>
+</tbody></table>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://zhangshihang2.github.io">ZhangShihang2</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://zhangshihang2.github.io/2026/08/31/weighted-lr-research/">https://zhangshihang2.github.io/2026/08/31/weighted-lr-research/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://zhangshihang2.github.io" target="_blank">ZhangShihang's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Weighted-LR/">Weighted LR</a><a class="post-meta__tags" href="/tags/YouTube/">YouTube</a><a class="post-meta__tags" href="/tags/%E6%97%B6%E9%95%BF%E5%BB%BA%E6%A8%A1/">时长建模</a><a class="post-meta__tags" href="/tags/%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F/">推荐系统</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/08/31/hello-world/" title="Hello World"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Hello World</div></div><div class="info-2"><div class="info-item-1">Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick StartCreate a new post1$ hexo new &quot;My New Post&quot;  More info: Writing Run server1$ hexo server  More info: Server Generate static files1$ hexo generate  More info: Generating Deploy to remote sites1$ hexo deploy  More info: Deployment </div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ZhangShihang2</div><div class="author-info-description">分享推荐系统、机器学习的学习记录与思考过程</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">2</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">4</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">1</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Weighted-Logistic-Regression-%E8%B0%83%E6%9F%A5%E6%8A%A5%E5%91%8A"><span class="toc-number">1.</span> <span class="toc-text">Weighted Logistic Regression 调查报告</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E9%97%AE%E9%A2%98%E8%83%8C%E6%99%AF"><span class="toc-number">1.1.</span> <span class="toc-text">一、问题背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81LR-%E5%9F%BA%E7%A1%80%E6%8E%A8%E5%AF%BC"><span class="toc-number">1.2.</span> <span class="toc-text">二、LR 基础推导</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Odds%EF%BC%88%E5%87%A0%E7%8E%87%E6%AF%94%EF%BC%89"><span class="toc-number">1.2.1.</span> <span class="toc-text">2.1 Odds（几率比）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Logit-%E5%87%BD%E6%95%B0%E4%B8%8E-LR-%E7%9A%84%E7%94%B1%E6%9D%A5"><span class="toc-number">1.2.2.</span> <span class="toc-text">2.2 Logit 函数与 LR 的由来</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E5%85%B3%E9%94%AE%E8%BD%AC%E6%8D%A2"><span class="toc-number">1.2.3.</span> <span class="toc-text">2.3 关键转换</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Weighted-LR-%E7%9A%84%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc-number">1.3.</span> <span class="toc-text">三、Weighted LR 的核心思想</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E6%9D%83%E9%87%8D%E8%AE%BE%E8%AE%A1"><span class="toc-number">1.3.1.</span> <span class="toc-text">3.1 权重设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%8A%A0%E6%9D%83%E5%90%8E-Odds-%E7%9A%84%E5%8F%98%E5%8C%96"><span class="toc-number">1.3.2.</span> <span class="toc-text">3.2 加权后 Odds 的变化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E5%85%B3%E9%94%AE%E8%BF%91%E4%BC%BC%EF%BC%9ApCTR-%E5%BE%88%E5%B0%8F%E6%97%B6"><span class="toc-number">1.3.3.</span> <span class="toc-text">3.3 关键近似：pCTR 很小时</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%BD%A2%E5%BC%8F%E5%8C%96%E6%95%B0%E5%AD%A6%E6%8E%A8%E5%AF%BC"><span class="toc-number">1.4.</span> <span class="toc-text">四、形式化数学推导</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E4%BB%8E%E5%8A%A0%E6%9D%83%E6%95%B0%E6%8D%AE%E5%88%86%E5%B8%83%E5%87%BA%E5%8F%91"><span class="toc-number">1.4.1.</span> <span class="toc-text">4.1 从加权数据分布出发</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E5%8A%A0%E6%9D%83%E5%90%8E%E7%9A%84%E4%B8%AA%E4%BD%93%E9%A2%84%E6%B5%8B"><span class="toc-number">1.4.2.</span> <span class="toc-text">4.2 加权后的个体预测</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E5%85%A8%E5%B1%80-Odds-%E4%B8%8E%E6%9C%9F%E6%9C%9B%E8%A7%82%E7%9C%8B%E6%97%B6%E9%95%BF%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">1.4.3.</span> <span class="toc-text">4.3 全局 Odds 与期望观看时长的关系</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81Serving-%E6%96%B9%E5%BC%8F"><span class="toc-number">1.5.</span> <span class="toc-text">五、Serving 方式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%94%A8-e-Wx-b-%E8%80%8C%E9%9D%9E-sigmoid"><span class="toc-number">1.5.1.</span> <span class="toc-text">5.1 为什么用 $e^{Wx+b}$ 而非 sigmoid</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E6%8E%92%E5%BA%8F%E8%80%8C%E9%9D%9E%E7%B2%BE%E7%A1%AE%E5%80%BC"><span class="toc-number">1.5.2.</span> <span class="toc-text">5.2 排序而非精确值</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%89%8D%E6%8F%90%E6%9D%A1%E4%BB%B6%E4%B8%8E%E5%B1%80%E9%99%90%E6%80%A7"><span class="toc-number">1.6.</span> <span class="toc-text">六、前提条件与局限性</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E6%A0%B8%E5%BF%83%E5%89%8D%E6%8F%90%EF%BC%9ApCTR-%E5%BF%85%E9%A1%BB%E5%BE%88%E5%B0%8F"><span class="toc-number">1.6.1.</span> <span class="toc-text">6.1 核心前提：pCTR 必须很小</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E7%9B%B4%E6%8E%A5%E5%9B%9E%E5%BD%92%E9%A2%84%E6%B5%8B%E6%97%B6%E9%95%BF%EF%BC%88MSE-loss-%E7%9A%84%E9%97%AE%E9%A2%98%EF%BC%89"><span class="toc-number">1.6.2.</span> <span class="toc-text">6.2 为什么不直接回归预测时长（MSE loss 的问题）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-WCE-%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0%E6%8E%A8%E5%AF%BC"><span class="toc-number">1.6.3.</span> <span class="toc-text">6.3 WCE 损失函数推导</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-%E6%A2%AF%E5%BA%A6%E4%B8%8D%E5%AF%B9%E7%A7%B0%E9%97%AE%E9%A2%98%EF%BC%88WCE-%E7%9A%84%E9%87%8D%E8%A6%81%E5%B1%80%E9%99%90%EF%BC%89"><span class="toc-number">1.6.4.</span> <span class="toc-text">6.4 梯度不对称问题（WCE 的重要局限）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-5-%E5%87%A0%E4%BD%95%E5%88%86%E5%B8%83%E5%81%87%E8%AE%BE"><span class="toc-number">1.6.5.</span> <span class="toc-text">6.5 几何分布假设</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E8%AE%AD%E7%BB%83%E6%96%B9%E6%B3%95"><span class="toc-number">1.7.</span> <span class="toc-text">七、训练方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E6%8E%A8%E5%B9%BF%EF%BC%9A%E5%BD%93-pCTR-%E4%B8%8D%E5%8F%AF%E5%BF%BD%E7%95%A5%E6%97%B6"><span class="toc-number">1.8.</span> <span class="toc-text">八、推广：当 pCTR 不可忽略时</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90"><span class="toc-number">1.8.1.</span> <span class="toc-text">8.1 问题分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-number">1.8.2.</span> <span class="toc-text">8.2 解决方案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-3-%E9%87%87%E6%A0%B7%E5%81%8F%E5%B7%AE%E4%BF%AE%E6%AD%A3"><span class="toc-number">1.8.3.</span> <span class="toc-text">8.3 采样偏差修正</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-4-%E4%B8%BA%E6%AF%8F%E4%B8%AA%E6%AD%A3%E4%BE%8B%E5%A2%9E%E5%8A%A0%E8%B4%9F%E4%BE%8B%EF%BC%88%E8%A7%A3%E5%86%B3%E8%BF%91%E4%BC%BC%E8%AF%AF%E5%B7%AE%EF%BC%89"><span class="toc-number">1.8.4.</span> <span class="toc-text">8.4 为每个正例增加负例（解决近似误差）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E6%97%B6%E9%95%BF%E5%BB%BA%E6%A8%A1%E7%9A%84%E5%85%B6%E4%BB%96%E6%96%B9%E6%A1%88%E4%B8%8E-Weighted-LR-%E7%9A%84%E6%BC%94%E8%BF%9B"><span class="toc-number">1.9.</span> <span class="toc-text">九、时长建模的其他方案与 Weighted LR 的演进</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-Weighted-LR-%E7%9A%84%E6%8E%A8%E5%B9%BF%EF%BC%9AGMV-%E5%9C%BA%E6%99%AF"><span class="toc-number">1.9.1.</span> <span class="toc-text">9.1 Weighted LR 的推广：GMV 场景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-CTR-%E4%B8%8D%E5%8F%AF%E5%BF%BD%E7%95%A5%E6%97%B6%E7%9A%84%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0"><span class="toc-number">1.9.2.</span> <span class="toc-text">9.2 CTR 不可忽略时的具体实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-3-%E5%9B%9E%E5%BD%92%E5%BB%BA%E6%A8%A1%E6%96%B9%E5%BC%8F%EF%BC%88log2-MSE%EF%BC%89"><span class="toc-number">1.9.3.</span> <span class="toc-text">9.3 回归建模方式（log2 + MSE）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-4-%E5%AE%8C%E6%92%AD%E7%8E%87%E5%BB%BA%E6%A8%A1"><span class="toc-number">1.9.4.</span> <span class="toc-text">9.4 完播率建模</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-5-%E6%97%B6%E9%95%BF%E5%BD%92%E4%B8%80%E5%8C%96%EF%BC%88Duration-Normalization%EF%BC%89"><span class="toc-number">1.9.5.</span> <span class="toc-text">9.5 时长归一化（Duration Normalization）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-6-CREAD%EF%BC%88%E5%BF%AB%E6%89%8B-AAAI%E2%80%9924%EF%BC%89"><span class="toc-number">1.9.6.</span> <span class="toc-text">9.6 CREAD（快手 AAAI’24）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-7-EMD%EF%BC%88Earth-Mover%E2%80%99s-Distance%EF%BC%89"><span class="toc-number">1.9.7.</span> <span class="toc-text">9.7 EMD（Earth Mover’s Distance）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-8-%E5%90%84%E6%96%B9%E6%A1%88%E5%AF%B9%E6%AF%94%E6%80%BB%E7%BB%93"><span class="toc-number">1.9.8.</span> <span class="toc-text">9.8 各方案对比总结</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-9-%E5%90%8E%E7%BB%AD%E7%A0%94%E7%A9%B6%E8%AE%BA%E6%96%87"><span class="toc-number">1.9.9.</span> <span class="toc-text">9.9 后续研究论文</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E5%AE%8C%E6%95%B4%E9%80%BB%E8%BE%91%E9%93%BE%E6%80%BB%E7%BB%93"><span class="toc-number">1.10.</span> <span class="toc-text">十、完整逻辑链总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E6%9D%A5%E6%BA%90%E7%B4%A2%E5%BC%95"><span class="toc-number">1.11.</span> <span class="toc-text">十一、来源索引</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/31/weighted-lr-research/" title="Weighted Logistic Regression 调查报告">Weighted Logistic Regression 调查报告</a><time datetime="2026-08-31T13:00:00.000Z" title="发表于 2026-08-31 21:00:00">2026-08-31</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/31/hello-world/" title="Hello World">Hello World</a><time datetime="2026-08-31T09:21:16.766Z" title="发表于 2026-08-31 17:21:16">2026-08-31</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By ZhangShihang2</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.0</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.0"></script><script src="/js/main.js?v=5.7.0"></script><div class="js-pjax"><script>(() => {
+  const changeScriptToMath = article => {
+    article.querySelectorAll('script[type^="math/tex"]').forEach(el => {
+      const display = /mode=display/.test(el.type)
+      const node = document.createElement(display ? 'div' : 'span')
+      node.textContent = display
+        ? `$$${el.textContent}$$`
+        : `$${el.textContent}$`
+      el.parentNode.replaceChild(node, el)
+    })
+  }
+
+  const loadMathjax = () => {
+    const article = document.getElementById('article-container')
+    if (!article || article.querySelector('.hbe-container')) return
+    changeScriptToMath(article)
+
+    if (!window.MathJax) {
+      window.MathJax = {
+        loader: {
+          load: [
+            // Four font extension packages (optional)
+            //- '[tex]/bbm',
+            //- '[tex]/bboldx',
+            //- '[tex]/dsfont',
+            '[tex]/mhchem',
+            'ui/lazy'
+          ],
+          paths: {
+            'mathjax-newcm': '[mathjax]/../@mathjax/mathjax-newcm-font',
+
+            //- // Four font extension packages (optional)
+            //- 'mathjax-bbm-extension': '[mathjax]/../@mathjax/mathjax-bbm-font-extension',
+            //- 'mathjax-bboldx-extension': '[mathjax]/../@mathjax/mathjax-bboldx-font-extension',
+            //- 'mathjax-dsfont-extension': '[mathjax]/../@mathjax/mathjax-dsfont-font-extension',
+            'mathjax-mhchem-extension': '[mathjax]/../@mathjax/mathjax-mhchem-font-extension'
+          }
+        },
+        output: {
+          font: 'mathjax-newcm',
+        },
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+          packages: {
+            '[+]': [
+              'mhchem'
+            ]
+          }
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          lazyMargin: '200px',
+          enableMenu: true,
+          menuOptions: {
+            settings: {
+              enrich: false  // Turn off Braille and voice narration text automatic generation
+            }
+          },
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@4.1.3/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.typesetClear()
+      MathJax.typesetPromise([ article ])
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
