@@ -7,7 +7,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://zhangshihang2.github.io/img/butterfly-icon.png">
 <meta property="article:published_time" content="2026-09-02T14:30:00.000Z">
-<meta property="article:modified_time" content="2026-09-02T09:12:01.154Z">
+<meta property="article:modified_time" content="2026-09-02T09:29:18.344Z">
 <meta property="article:author" content="ZhangShihang2">
 <meta property="article:tag" content="CTR预估">
 <meta property="article:tag" content="FM">
@@ -22,7 +22,7 @@
   "url": "https://zhangshihang2.github.io/2026/09/02/lr-blog/",
   "image": "https://zhangshihang2.github.io/img/butterfly-icon.png",
   "datePublished": "2026-09-02T14:30:00.000Z",
-  "dateModified": "2026-09-02T09:12:01.154Z",
+  "dateModified": "2026-09-02T09:29:18.344Z",
   "author": [
     {
       "@type": "Person",
@@ -205,7 +205,7 @@
   isHighlightShrink: false,
   isToc: true,
   pageType: 'post'
-}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ZhangShihang's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">逻辑回归的数学必然与工业演进</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">逻辑回归的数学必然与工业演进</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-02T14:30:00.000Z" title="发表于 2026-09-02 22:30:00">2026-09-02</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-09-02T09:12:01.154Z" title="更新于 2026-09-02 17:12:01">2026-09-02</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="逻辑回归的数学必然与工业演进"><a href="#逻辑回归的数学必然与工业演进" class="headerlink" title="逻辑回归的数学必然与工业演进"></a>逻辑回归的数学必然与工业演进</h1><p>逻辑回归（Logistic Regression，LR）是机器学习里被误解最深的模型：名字带”回归”，干的却是分类的活；看起来简单到只有一层线性变换加一个 sigmoid，却在深度学习时代过去十年后依然是 CTR 预估、风控、营销响应等场景的常青树。</p>
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ZhangShihang's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">逻辑回归的数学必然与工业演进</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">逻辑回归的数学必然与工业演进</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-02T14:30:00.000Z" title="发表于 2026-09-02 22:30:00">2026-09-02</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-09-02T09:29:18.344Z" title="更新于 2026-09-02 17:29:18">2026-09-02</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">机器学习</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="逻辑回归的数学必然与工业演进"><a href="#逻辑回归的数学必然与工业演进" class="headerlink" title="逻辑回归的数学必然与工业演进"></a>逻辑回归的数学必然与工业演进</h1><p>逻辑回归（Logistic Regression，LR）是机器学习里被误解最深的模型：名字带”回归”，干的却是分类的活；看起来简单到只有一层线性变换加一个 sigmoid，却在深度学习时代过去十年后依然是 CTR 预估、风控、营销响应等场景的常青树。</p>
 <p>这篇文章做三件事：讲清楚 LR 从线性回归一步步演化而来的完整逻辑；展示 sigmoid 这个函数如何从三条完全独立的数学路径殊途同归地被推导出来；最后沿着工业界的演进树，看 FM、Wide&amp;Deep、DeepFM 这些模型如何围绕 LR 的短板做文章。篇幅所限，正文只保留推导主线，完整公式推导统一放在附录。</p>
 <h2 id="一、从线性回归到逻辑回归"><a href="#一、从线性回归到逻辑回归" class="headerlink" title="一、从线性回归到逻辑回归"></a>一、从线性回归到逻辑回归</h2><p>理解 LR 的起点是线性回归。线性回归用 $f(x_i) &#x3D; wx_i + b$ 拟合连续的 $y$ 值，用平方损失度量拟合效果，再通过求损失函数极小值确定参数 $w$ 和 $b$。</p>
 <p>当数据不是直线分布时，一个经典技巧是对坐标做变换——取倒数、取对数——把非线性关系拉直了再拟合。比如对数线性回归：</p>
@@ -223,11 +223,11 @@
 <p>$$F(x) &#x3D; \frac{1}{1+e^{-(x-\mu)&#x2F;\gamma}}$$</p>
 <p>其中 $\mu$ 是位置参数，$\gamma$ 是形状参数。取 $\mu&#x3D;0, \gamma&#x3D;1$，分布函数就是 sigmoid。这条曲线以 $(\mu, \frac{1}{2})$ 为中心对称，$\gamma$ 越小，曲线在中心附近增长越快。也就是说，<strong>sigmoid 本身就是一个真实概率分布的累积分布函数（CDF）</strong>——LR 的输出天然具有概率语义，这不是巧合，是定义。</p>
 <p><strong>身份三：最大熵约束优化的解析解。</strong> 这是最深刻的一条路径。原则是”不引入任何额外假设”：在所有满足数据观测特征统计量的分布中，选择条件熵最大的那个。约束条件要求——特征函数关于模型的期望必须等于关于经验分布的期望，即模型必须复现数据中的特征统计量，一个比特的额外假设都不加：</p>
-<p>$\max_{P(y\mid x)} \ H(P), \quad \text{s.t.} \ E_P(f_i) &#x3D; E_{\tilde{P}}(f_i), \ i &#x3D; 1, \dots, n$</p>
+<p>$$\max_{P(y\mid x)} \ H(P), \quad \text{s.t.} \ E_P(f_i) &#x3D; E_{\tilde{P}}(f_i), \ i &#x3D; 1, \dots, n$$</p>
 <p>用拉格朗日乘数法求解，对 $P(y\mid x)$ 求偏导令其为零，解出的条件分布具有指数形式 $P(y\mid x) \propto \exp\left(\sum_i w_i f_i(x,y)\right)$——二分类、特征函数取线性形式时恰好化简为 $P(y&#x3D;1\mid x) &#x3D; \frac{1}{1+e^{-wx-b}}$。完整推导见附录 B.3，其中拉格朗日乘子与特征函数相乘的机制，正是求导过程中 $wx+b$ 项的来源。这条路径同时揭示了最大熵模型与 LR 的等价性：NLP 领域曾长期把最大熵模型当标配，后来大家意识到它和 LR 在数学上是同一个东西，只是推导哲学不同——一个从熵最大化出发，一个从极大似然出发。</p>
 <p>三条路径，三个完全不同的出发点——概率建模、分布定义、约束优化——终点却是同一个函数。这种殊途同归不是巧合，而是 sigmoid 数学必然性的体现，也是 LR 能够成为概率分类器原型的根本原因。</p>
 <h2 id="三、损失函数与极大似然"><a href="#三、损失函数与极大似然" class="headerlink" title="三、损失函数与极大似然"></a>三、损失函数与极大似然</h2><p>LR 的损失函数同样不是工程选择，而是统计推断的解析形式。设 $P(Y&#x3D;1 \mid x) &#x3D; \pi(x)$，并假设训练样本独立同分布（i.i.d.）——这是联合似然能写成连乘的前提——对训练集 $T &#x3D; {(x_i, y_i)}_{i&#x3D;1}^N$ 写出似然函数：</p>
-<p>$\prod_{i&#x3D;1}^{N} [\pi(x_i)]^{y_i} [1-\pi(x_i)]^{1-y_i}$</p>
+<p>$$\prod_{i&#x3D;1}^{N} [\pi(x_i)]^{y_i} [1-\pi(x_i)]^{1-y_i}$$</p>
 <p>取对数并化简（完整过程见附录 C）：</p>
 <p>$$L(w) &#x3D; \sum_{i&#x3D;1}^{N} \Big[ y_i (w \cdot x_i) - \ln(1+e^{w \cdot x_i}) \Big]$$</p>
 <p>最大化 $L(w)$ 等价于最小化它的相反数，而后者正是交叉熵损失：</p>
@@ -322,17 +322,17 @@
 <li><strong>经验分布</strong>：$\tilde{P}(x, y) &#x3D; \frac{\nu(x,y)}{N}$、$\tilde{P}(x) &#x3D; \frac{\nu(x)}{N}$，其中 $\nu(\cdot)$ 为计数函数。经验分布就是”训练数据里各事件出现的频率”，附录 B.3 的约束以它为基准。</li>
 <li><strong>向量扩充记号</strong>：为书写简洁，常将偏置并入权重向量，$w \leftarrow [w_1, \dots, w_n, b]^T$，$x \leftarrow [x^{(1)}, \dots, x^{(n)}, 1]^T$，此后 $w \cdot x$ 自动包含偏置项。</li>
 </ul>
-<h3 id="A-2-sigmoid-的一阶导数"><a href="#A-2-sigmoid-的一阶导数" class="headerlink" title="A.2 sigmoid 的一阶导数"></a>A.2 sigmoid 的一阶导数</h3><p>$\sigma’(z) &#x3D; \frac{d}{dz}\frac{1}{1+e^{-z}} &#x3D; \frac{e^{-z}}{(1+e^{-z})^2} &#x3D; \frac{1}{1+e^{-z}} \cdot \frac{e^{-z}}{1+e^{-z}} &#x3D; \sigma(z)\big(1-\sigma(z)\big)$</p>
+<h3 id="A-2-sigmoid-的一阶导数"><a href="#A-2-sigmoid-的一阶导数" class="headerlink" title="A.2 sigmoid 的一阶导数"></a>A.2 sigmoid 的一阶导数</h3><p>$$\sigma’(z) &#x3D; \frac{d}{dz}\frac{1}{1+e^{-z}} &#x3D; \frac{e^{-z}}{(1+e^{-z})^2} &#x3D; \frac{1}{1+e^{-z}} \cdot \frac{e^{-z}}{1+e^{-z}} &#x3D; \sigma(z)\big(1-\sigma(z)\big)$$</p>
 <p>第三步把分子 $e^{-z}$ 拆成 $(1+e^{-z}) - 1$ 是关键技巧。这个”导数可以用函数自身表示”的性质是 LR 梯度形式干净的原因。注意 $\sigma’(z) \in (0, \frac{1}{4}]$，在 $z&#x3D;0$ 处取最大值 $1&#x2F;4$，向两端衰减。</p>
 <h3 id="A-3-sigmoid-的二阶导数"><a href="#A-3-sigmoid-的二阶导数" class="headerlink" title="A.3 sigmoid 的二阶导数"></a>A.3 sigmoid 的二阶导数</h3><p>对 A.2 的结果再用一次乘积法则：</p>
-<p>$\sigma’’(z) &#x3D; \frac{d}{dz}\Big[\sigma(z)\big(1-\sigma(z)\big)\Big] &#x3D; \sigma’(z)\big(1-\sigma(z)\big) - \sigma(z)\sigma’(z) &#x3D; \sigma’(z)\big(1 - 2\sigma(z)\big)$</p>
+<p>$$\sigma’’(z) &#x3D; \frac{d}{dz}\Big[\sigma(z)\big(1-\sigma(z)\big)\Big] &#x3D; \sigma’(z)\big(1-\sigma(z)\big) - \sigma(z)\sigma’(z) &#x3D; \sigma’(z)\big(1 - 2\sigma(z)\big)$$</p>
 <p>即 $\sigma’’(z) &#x3D; \sigma(z)(1-\sigma(z))(1-2\sigma(z))$。它的符号由 $1-2\sigma(z)$ 决定：$\sigma(z) &lt; \frac{1}{2}$（即 $z&lt;0$）时为正，$\sigma(z) &gt; \frac{1}{2}$ 时为负。这个符号变化是附录 D 中平方损失非凸分析的根源。</p>
 <h3 id="A-4-两个常用求导结果"><a href="#A-4-两个常用求导结果" class="headerlink" title="A.4 两个常用求导结果"></a>A.4 两个常用求导结果</h3><p><strong>结果一</strong>（附录 C 使用）：</p>
-<p>$\frac{d}{dz}\ln(1+e^z) &#x3D; \frac{e^z}{1+e^z} &#x3D; \sigma(z)$</p>
+<p>$$\frac{d}{dz}\ln(1+e^z) &#x3D; \frac{e^z}{1+e^z} &#x3D; \sigma(z)$$</p>
 <p><strong>结果二</strong>（附录 B.3 使用）：二元熵函数 $H(p) &#x3D; -p\ln p - (1-p)\ln(1-p)$ 对 $p$ 的导数，用乘积法则分项计算：</p>
-<p>$\frac{d}{dp}(-p\ln p) &#x3D; -\ln p - 1, \qquad \frac{d}{dp}\big(-(1-p)\ln(1-p)\big) &#x3D; \ln(1-p) + 1$</p>
+<p>$$\frac{d}{dp}(-p\ln p) &#x3D; -\ln p - 1, \qquad \frac{d}{dp}\big(-(1-p)\ln(1-p)\big) &#x3D; \ln(1-p) + 1$$</p>
 <p>两项相加，常数 $\mp 1$ 恰好抵消：</p>
-<p>$H’(p) &#x3D; -\ln p + \ln(1-p) &#x3D; -\ln\frac{p}{1-p}$</p>
+<p>$$H’(p) &#x3D; -\ln p + \ln(1-p) &#x3D; -\ln\frac{p}{1-p}$$</p>
 <h2 id="附录-B-sigmoid-的三条推导路径"><a href="#附录-B-sigmoid-的三条推导路径" class="headerlink" title="附录 B sigmoid 的三条推导路径"></a>附录 B sigmoid 的三条推导路径</h2><h3 id="B-1-伯努利分布与-logit-变换"><a href="#B-1-伯努利分布与-logit-变换" class="headerlink" title="B.1 伯努利分布与 logit 变换"></a>B.1 伯努利分布与 logit 变换</h3><p>设二分类标签 $y \in {0,1}$ 服从伯努利分布，$P(y&#x3D;1 \mid x) &#x3D; p$。为让 $p$ 与特征建立线性关系，同时解决值域问题，对 $p$ 做 logit 变换：</p>
 <p>$$\text{logit}(p) &#x3D; \ln\frac{p}{1-p} &#x3D; w^Tx + b$$</p>
 <p>求解 $p$：</p>
@@ -347,12 +347,12 @@
 <h3 id="B-3-最大熵与拉格朗日乘数法"><a href="#B-3-最大熵与拉格朗日乘数法" class="headerlink" title="B.3 最大熵与拉格朗日乘数法"></a>B.3 最大熵与拉格朗日乘数法</h3><p>这条路径的完整推导需要先明确约束中”两个期望”的准确含义，再展示拉格朗日乘子如何在求导中转化为模型参数——这正是正文提到的 $wx+b$ 项的来源。</p>
 <p><strong>第 0 步：特征函数与两个期望。</strong> 特征函数 $f_i(x, y)$ 是定义在样本与标签上的指示函数，例如”$y&#x3D;1$ 且特征 $x$ 满足某条件时取 1，否则取 0”。关键约束是：特征函数关于模型的期望必须等于关于经验分布的期望。</p>
 <p>特征函数关于<strong>经验分布</strong>的期望（数据统计出的事实，是常数）：</p>
-<p>$E_{\tilde{P}}(f_i) &#x3D; \sum_{x,y} \tilde{P}(x, y), f_i(x, y)$</p>
+<p>$$E_{\tilde{P}}(f_i) &#x3D; \sum_{x,y} \tilde{P}(x, y), f_i(x, y)$$</p>
 <p>特征函数关于<strong>模型</strong> $P(y \mid x)$ 的期望（配经验边缘分布 $\tilde{P}(x)$，含待求变量）：</p>
-<p>$E_P(f_i) &#x3D; \sum_{x,y} \tilde{P}(x), P(y \mid x), f_i(x, y)$</p>
+<p>$$E_P(f_i) &#x3D; \sum_{x,y} \tilde{P}(x), P(y \mid x), f_i(x, y)$$</p>
 <p>约束 $E_P(f_i) &#x3D; E_{\tilde{P}}(f_i)$ 的含义是：<strong>模型学到的特征统计量必须与训练数据中观测到的一致</strong>——除此之外一个比特的额外假设都不加，剩余的不确定性全部交给熵最大化去分配。</p>
 <p><strong>第 1 步：写出优化问题与拉格朗日函数。</strong> 目标是最大化条件熵 $H(P) &#x3D; -\sum_{x,y} \tilde{P}(x) P(y \mid x) \ln P(y \mid x)$，约束为特征期望匹配（$n$ 个）与概率归一化（1 个）。原问题 $\max_P H$ 等价于 $\min_P (-H)$，对每个约束引入一个拉格朗日乘子（归一化约束的乘子记 $w_0$，特征约束的乘子记 $w_i$）：</p>
-<p>$L(P, w) &#x3D; \sum_{x,y} \tilde{P}(x) P(y \mid x) \ln P(y \mid x) + w_0 \Big(\sum_y P(y \mid x) - 1\Big) + \sum_{i&#x3D;1}^{n} w_i \Big(\underbrace{\sum_{x,y} \tilde{P}(x) P(y \mid x) f_i(x, y)}<em>{E_P(f_i)\text{，含变量}} - \underbrace{E</em>{\tilde{P}}(f_i)}_{\text{常数}}\Big)$</p>
+<p>$$L(P, w) &#x3D; \sum_{x,y} \tilde{P}(x) P(y \mid x) \ln P(y \mid x) + w_0 \Big(\sum_y P(y \mid x) - 1\Big) + \sum_{i&#x3D;1}^{n} w_i \Big(\underbrace{\sum_{x,y} \tilde{P}(x) P(y \mid x) f_i(x, y)}<em>{E_P(f_i)\text{，含变量}} - \underbrace{E</em>{\tilde{P}}(f_i)}_{\text{常数}}\Big)$$</p>
 <p><strong>第 2 步：对 $P(y \mid x)$ 求偏导。</strong> 逐项考察导数来源：</p>
 <ul>
 <li>第一项（熵项）：把 $P(y\mid x)$ 看作变量，用 A.4 结果二的同款乘积法则，得 $\tilde{P}(x)\big(\ln P(y \mid x) + 1\big)$；</li>
@@ -360,39 +360,39 @@
 <li>$w_i$ 项：$E_{\tilde{P}}(f_i)$ 是常数导数为零，$E_P(f_i)$ 中 $P(y \mid x)$ 以线性形式出现，求导得 $w_i, \tilde{P}(x), f_i(x, y)$。</li>
 </ul>
 <p>令偏导为零：</p>
-<p>$\tilde{P}(x)\big(\ln P(y \mid x) + 1\big) + w_0 + \sum_{i&#x3D;1}^{n} w_i, \tilde{P}(x), f_i(x, y) &#x3D; 0$</p>
+<p>$$\tilde{P}(x)\big(\ln P(y \mid x) + 1\big) + w_0 + \sum_{i&#x3D;1}^{n} w_i, \tilde{P}(x), f_i(x, y) &#x3D; 0$$</p>
 <p><strong>$wx+b$ 出现的机制就在最后一项</strong>：$\sum_i w_i f_i(x, y)$ 是拉格朗日乘子与特征函数的乘积。当特征函数取”指示 $y&#x3D;1$ 且携带特征 $x$”的线性形式时，这一项在 $y&#x3D;1$ 时就是 $w \cdot x + b$（常数乘子 $w_0$ 被吸收进截距 $b$），在 $y&#x3D;0$ 时为 0。</p>
 <p><strong>第 3 步：解出指数形式。</strong> 整理得</p>
-<p>$\ln P(y \mid x) &#x3D; -1 - \frac{w_0}{\tilde{P}(x)} - \sum_{i&#x3D;1}^{n} w_i f_i(x, y)$</p>
-<p>$P(y \mid x) &#x3D; \frac{1}{Z(x)} \exp\Big(\sum_{i&#x3D;1}^{n} w_i f_i(x, y)\Big)$</p>
+<p>$$\ln P(y \mid x) &#x3D; -1 - \frac{w_0}{\tilde{P}(x)} - \sum_{i&#x3D;1}^{n} w_i f_i(x, y)$$</p>
+<p>$$P(y \mid x) &#x3D; \frac{1}{Z(x)} \exp\Big(\sum_{i&#x3D;1}^{n} w_i f_i(x, y)\Big)$$</p>
 <p>其中 $Z(x) &#x3D; \sum_y \exp\left(\sum_i w_i f_i(x, y)\right)$ 由归一化约束确定（前两项常数被吸收进 $Z$ 与乘子符号）。</p>
 <p><strong>第 4 步：二分类化简出 sigmoid。</strong> 代入 $y \in {0, 1}$：$y&#x3D;1$ 时指数为 $w \cdot x + b$，$y&#x3D;0$ 时指数为 $0$（即 $e^0 &#x3D; 1$）：</p>
-<p>$P(y&#x3D;1 \mid x) &#x3D; \frac{e^{w \cdot x + b}}{e^{w \cdot x + b} + e^{0}} &#x3D; \frac{1}{1 + e^{-(w \cdot x + b)}} &#x3D; \sigma(w \cdot x + b)$</p>
+<p>$$P(y&#x3D;1 \mid x) &#x3D; \frac{e^{w \cdot x + b}}{e^{w \cdot x + b} + e^{0}} &#x3D; \frac{1}{1 + e^{-(w \cdot x + b)}} &#x3D; \sigma(w \cdot x + b)$$</p>
 <p><strong>第 5 步：乘子就是模型参数。</strong> 注意第 2 步之后，拉格朗日函数里已经没有”外部给定的 $w$”——$w_i$ 本身就是待优化的对象。原问题转化为对偶问题：内层对 $P$ 求极小解出以 $w$ 为参数的分布形式，外层再对 $w$ 求极小，而这个外层优化恰好等价于 LR 的极大似然。<strong>拉格朗日乘子最终成为模型参数</strong>，这是最大熵推导最漂亮的结论，也是最大熵模型与 LR 数学等价的来源。</p>
 <p>需要说明的是，知乎原文 [1] 的简写把多样本求和压缩为单变量 $p$，并将乘子与特征函数的乘积 $\lambda f(x,y)$ 直接记作 $wx+b$，省略了”$E_P(f_i)$ 含变量 $P(y \mid x)$”这一关键事实，因此求导结果中的 $wx+b$ 显得凭空出现。本节展开的严格版本即为其完整形式。</p>
 <h2 id="附录-C-极大似然估计的完整推导"><a href="#附录-C-极大似然估计的完整推导" class="headerlink" title="附录 C 极大似然估计的完整推导"></a>附录 C 极大似然估计的完整推导</h2><p>设 $P(Y&#x3D;1 \mid x) &#x3D; \pi(x)$，$P(Y&#x3D;0 \mid x) &#x3D; 1-\pi(x)$。</p>
 <p><strong>似然函数的来源。</strong> 单个样本的标签服从伯努利分布：观测到 $y_i&#x3D;1$ 的概率是 $\pi(x_i)$，观测到 $y_i&#x3D;0$ 的概率是 $1-\pi(x_i)$。用指示幂技巧可以把两种情况统一写成一行（$y_i&#x3D;1$ 时第二项幂为 0，$y_i&#x3D;0$ 时第一项幂为 0）：</p>
-<p>$P(y_i \mid x_i) &#x3D; [\pi(x_i)]^{y_i}, [1-\pi(x_i)]^{1-y_i}$</p>
+<p>$$P(y_i \mid x_i) &#x3D; [\pi(x_i)]^{y_i}, [1-\pi(x_i)]^{1-y_i}$$</p>
 <p>在样本独立同分布假设下（见 A.1），联合似然等于各样本似然的连乘：</p>
-<p>$\prod_{i&#x3D;1}^{N} [\pi(x_i)]^{y_i} [1-\pi(x_i)]^{1-y_i}$</p>
+<p>$$\prod_{i&#x3D;1}^{N} [\pi(x_i)]^{y_i} [1-\pi(x_i)]^{1-y_i}$$</p>
 <p><strong>对数似然。</strong> 连乘不便优化，取对数将连乘化为求和：</p>
-<p>$L(w) &#x3D; \sum_{i&#x3D;1}^{N} \Big[ y_i \log \pi(x_i) + (1-y_i) \log(1-\pi(x_i)) \Big]$</p>
+<p>$$L(w) &#x3D; \sum_{i&#x3D;1}^{N} \Big[ y_i \log \pi(x_i) + (1-y_i) \log(1-\pi(x_i)) \Big]$$</p>
 <p><strong>化简。</strong> 对求和号内每一项，加上再减去 $y_i \log(1-\pi)$：</p>
-<p>$y_i \log \pi + (1-y_i)\log(1-\pi) &#x3D; y_i\big(\log \pi - \log(1-\pi)\big) + \big(y_i + 1 - y_i\big)\log(1-\pi) &#x3D; y_i \log\frac{\pi}{1-\pi} + \log(1-\pi)$</p>
+<p>$$y_i \log \pi + (1-y_i)\log(1-\pi) &#x3D; y_i\big(\log \pi - \log(1-\pi)\big) + \big(y_i + 1 - y_i\big)\log(1-\pi) &#x3D; y_i \log\frac{\pi}{1-\pi} + \log(1-\pi)$$</p>
 <p>其中 $\frac{\pi(x_i)}{1-\pi(x_i)} &#x3D; e^{w \cdot x_i}$ 并非新假设，它正是 logit 变换 $\ln\frac{\pi}{1-\pi} &#x3D; w \cdot x$ 的两边取指数（附录 B.1）。代入并利用 $1 - \pi(x_i) &#x3D; \frac{1}{1+e^{w\cdot x_i}}$：</p>
-<p>$L(w) &#x3D; \sum_{i&#x3D;1}^{N} \Big[ y_i (w \cdot x_i) - \ln(1+e^{w \cdot x_i}) \Big]$</p>
+<p>$$L(w) &#x3D; \sum_{i&#x3D;1}^{N} \Big[ y_i (w \cdot x_i) - \ln(1+e^{w \cdot x_i}) \Big]$$</p>
 <p>极大似然估计即求 $\hat{w} &#x3D; \arg\max_w L(w)$，等价于最小化 $-L(w)$，即交叉熵损失。求解该优化问题通常用梯度下降法或拟牛顿法。</p>
 <p><strong>梯度推导。</strong> 记 $z_i &#x3D; w \cdot x_i$，交叉熵对单个样本的损失为 $\ell_i &#x3D; -y_i z_i + \ln(1+e^{z_i})$。第一项线性求导得 $-y_i x_i$；第二项用 A.4 结果一 $\frac{d}{dz}\ln(1+e^z) &#x3D; \sigma(z)$，再乘链式法则中的 $\frac{\partial z_i}{\partial w} &#x3D; x_i$：</p>
-<p>$\frac{\partial \ell_i}{\partial w} &#x3D; -y_i x_i + \sigma(z_i), x_i &#x3D; (\sigma(z_i) - y_i) x_i$</p>
+<p>$$\frac{\partial \ell_i}{\partial w} &#x3D; -y_i x_i + \sigma(z_i), x_i &#x3D; (\sigma(z_i) - y_i) x_i$$</p>
 <p>全体样本求和即得正文中的残差形式。</p>
 <p><strong>凸性验证。</strong> 对 $w$ 再求一次导（利用 A.2 的 $\sigma’(z) &#x3D; \sigma(z)(1-\sigma(z))$），Hessian 为</p>
-<p>$\nabla_w^2 \mathcal{L} &#x3D; \sum_{i&#x3D;1}^{N} \sigma(z_i)\big(1-\sigma(z_i)\big), x_i x_i^T \succeq 0$</p>
+<p>$$\nabla_w^2 \mathcal{L} &#x3D; \sum_{i&#x3D;1}^{N} \sigma(z_i)\big(1-\sigma(z_i)\big), x_i x_i^T \succeq 0$$</p>
 <p>每个求和项都是半正定矩阵，因此交叉熵损失全局凸——梯度下降保证收敛到全局最优。这与附录 D 中平方损失的非凸性形成鲜明对比。</p>
 <h2 id="附录-D-为什么平方损失在逻辑回归上非凸"><a href="#附录-D-为什么平方损失在逻辑回归上非凸" class="headerlink" title="附录 D 为什么平方损失在逻辑回归上非凸"></a>附录 D 为什么平方损失在逻辑回归上非凸</h2><p>本节给出严格证明：平方损失套上 sigmoid 后，Hessian 在参数空间的某些区域不半正定，因此非凸。推导依赖 A.2、A.3 的两个导数结果。</p>
 <p><strong>一阶与二阶导数。</strong> 单样本平方损失 $\ell &#x3D; \frac{1}{2}\big(\sigma(z) - y\big)^2$，其中 $z &#x3D; w \cdot x$。先用链式法则（$\frac{\partial z}{\partial w} &#x3D; x$）：</p>
-<p>$\nabla_w \ell &#x3D; \big(\sigma(z) - y\big), \sigma’(z), x$</p>
+<p>$$\nabla_w \ell &#x3D; \big(\sigma(z) - y\big), \sigma’(z), x$$</p>
 <p>再对 $w$ 求导得 Hessian。乘积法则中两个因子都含 $w$，各自求导：</p>
-<p>$\nabla_w^2 \ell &#x3D; \Big[\underbrace{\sigma’(z)\cdot\sigma’(z)}<em>{\text{外因子求导}} + \underbrace{\big(\sigma(z)-y\big)\sigma’’(z)}</em>{\text{内因子求导}}\Big] x x^T &#x3D; \Big[(\sigma’(z))^2 + \big(\sigma(z)-y\big)\sigma’’(z)\Big] x x^T$</p>
+<p>$$\nabla_w^2 \ell &#x3D; \Big[\underbrace{\sigma’(z)\cdot\sigma’(z)}<em>{\text{外因子求导}} + \underbrace{\big(\sigma(z)-y\big)\sigma’’(z)}</em>{\text{内因子求导}}\Big] x x^T &#x3D; \Big[(\sigma’(z))^2 + \big(\sigma(z)-y\big)\sigma’’(z)\Big] x x^T$$</p>
 <p><strong>关键：中括号可以为负。</strong> 记 $s &#x3D; \sigma(z) \in (0,1)$，代入 A.2、A.3 的结果 $\sigma’ &#x3D; s(1-s)$、$\sigma’’ &#x3D; s(1-s)(1-2s)$，中括号化简为：</p>
 <ul>
 <li>真实标签 $y &#x3D; 1$ 时：$s^2(1-s)^2 + (s-1)\cdot s(1-s)(1-2s) &#x3D; s(1-s)^2,(3s - 1)$</li>
@@ -421,18 +421,18 @@
 <p><strong>几何直觉。</strong> 只要出现”严重分错”的样本——真实为 1 但模型给出的概率不足 1&#x2F;3，或真实为 0 但模型给出的概率超过 2&#x2F;3——该样本贡献的 Hessian 就沿 $x$ 方向负定，损失曲面在这类样本附近向下弯。参数空间因此存在多个局部极小值，梯度下降可能停在一个”把部分样本严重分错”的点上出不来。</p>
 <p><strong>两个对比。</strong> 线性回归的平方损失直接作用在线性函数 $w \cdot x$ 上，Hessian 恒为 $xx^T \succeq 0$，全局凸——sigmoid 的非线性正是破坏凸性的元凶。交叉熵损失则相反：附录 C 已验证其 Hessian 为 $\sum_i \sigma(z_i)(1-\sigma(z_i)),x_ix_i^T$，恒半正定。这就是 LR 必须换损失函数的深层原因：<strong>不是平方损失”不好用”，而是它在 sigmoid 结构下连凸性这个优化的基本保障都失去了。</strong></p>
 <h2 id="附录-E-FM-从二阶多项式到因子分解"><a href="#附录-E-FM-从二阶多项式到因子分解" class="headerlink" title="附录 E FM 从二阶多项式到因子分解"></a>附录 E FM 从二阶多项式到因子分解</h2><p>CTR 场景下，LR 的假设函数写成内积形式为 $y &#x3D; \sigma(w^Tx)$。为了自动引入特征二阶组合，推广为二阶多项式模型（交叉项取 $i &lt; j$ 避免重复）：</p>
-<p>$y &#x3D; \sigma\left(w_0 + \sum_{i&#x3D;1}^{n} w_i x_i + \sum_{i&#x3D;1}^{n}\sum_{j&#x3D;i+1}^{n} w_{ij} x_i x_j\right)$</p>
+<p>$$y &#x3D; \sigma\left(w_0 + \sum_{i&#x3D;1}^{n} w_i x_i + \sum_{i&#x3D;1}^{n}\sum_{j&#x3D;i+1}^{n} w_{ij} x_i x_j\right)$$</p>
 <p>其中 $W^{(2)} &#x3D; [w_{ij}]$ 为二阶交叉权重矩阵，对称，参数量为 $O(n^2)$。为降低参数量，将其因子分解为两个低维矩阵的乘积，即令 $w_{ij} &#x3D; \langle v_i, v_j \rangle$，其中 $v_i \in \mathbb{R}^k$ 为特征 $i$ 的隐向量，参数量降为 $O(nk)$。</p>
 <p><strong>关键恒等式的推导。</strong> 直接按定义计算交叉项需要 $O(kn^2)$ 次乘法，FM 用一个恒等式把它降到 $O(kn)$。分三步看它怎么来的。</p>
 <p>第一步，把内积按分量展开，并交换求和顺序（$f$ 是隐向量维度）：</p>
-<p>$\sum_{i&lt;j} \langle v_i, v_j \rangle x_i x_j &#x3D; \sum_{i&lt;j} \sum_{f&#x3D;1}^{k} v_{if} v_{jf}, x_i x_j &#x3D; \sum_{f&#x3D;1}^{k} \sum_{i&lt;j} (v_{if} x_i)(v_{jf} x_j)$</p>
+<p>$$\sum_{i&lt;j} \langle v_i, v_j \rangle x_i x_j &#x3D; \sum_{i&lt;j} \sum_{f&#x3D;1}^{k} v_{if} v_{jf}, x_i x_j &#x3D; \sum_{f&#x3D;1}^{k} \sum_{i&lt;j} (v_{if} x_i)(v_{jf} x_j)$$</p>
 <p>第二步，用”平方和减去对角项”的技巧处理 $\sum_{i&lt;j}$。全求和 $\sum_{i&#x3D;1}^n\sum_{j&#x3D;1}^n$ 中，$i \neq j$ 的项每对出现两次（$(i,j)$ 与 $(j,i)$），$i &#x3D; j$ 的项是特征平方：</p>
-<p>$\sum_{i&#x3D;1}^{n}\sum_{j&#x3D;1}^{n} (v_{if} x_i)(v_{jf} x_j) &#x3D; \left(\sum_{i&#x3D;1}^{n} v_{if} x_i\right)^2 &#x3D; \sum_{i&#x3D;1}^{n} v_{if}^2 x_i^2 + 2\sum_{i&lt;j} (v_{if} x_i)(v_{jf} x_j)$</p>
+<p>$$\sum_{i&#x3D;1}^{n}\sum_{j&#x3D;1}^{n} (v_{if} x_i)(v_{jf} x_j) &#x3D; \left(\sum_{i&#x3D;1}^{n} v_{if} x_i\right)^2 &#x3D; \sum_{i&#x3D;1}^{n} v_{if}^2 x_i^2 + 2\sum_{i&lt;j} (v_{if} x_i)(v_{jf} x_j)$$</p>
 <p>第三步，反解出 $\sum_{i&lt;j}$ 部分并对 $f$ 求和：</p>
-<p>$\sum_{i&lt;j} \langle v_i, v_j \rangle x_i x_j &#x3D; \frac{1}{2}\sum_{f&#x3D;1}^{k}\left[\left(\sum_{i&#x3D;1}^{n} v_{if} x_i\right)^2 - \sum_{i&#x3D;1}^{n} v_{if}^2 x_i^2\right]$</p>
+<p>$$\sum_{i&lt;j} \langle v_i, v_j \rangle x_i x_j &#x3D; \frac{1}{2}\sum_{f&#x3D;1}^{k}\left[\left(\sum_{i&#x3D;1}^{n} v_{if} x_i\right)^2 - \sum_{i&#x3D;1}^{n} v_{if}^2 x_i^2\right]$$</p>
 <p>两个括号内都只有 $O(n)$ 次乘法，外层对 $f$ 求和共 $O(kn)$——计算量从平方级降到线性级，这是 FM 能在百万维稀疏特征上实用的工程前提。</p>
 <p>代入即得常见的 FM 公式：</p>
-<p>$y &#x3D; \sigma\left(w_0 + \sum_{i&#x3D;1}^{n} w_i x_i + \frac{1}{2}\sum_{f&#x3D;1}^{k}\left[\left(\sum_{i&#x3D;1}^{n} v_{if} x_i\right)^2 - \sum_{i&#x3D;1}^{n} v_{if}^2 x_i^2\right]\right)$</p>
+<p>$$y &#x3D; \sigma\left(w_0 + \sum_{i&#x3D;1}^{n} w_i x_i + \frac{1}{2}\sum_{f&#x3D;1}^{k}\left[\left(\sum_{i&#x3D;1}^{n} v_{if} x_i\right)^2 - \sum_{i&#x3D;1}^{n} v_{if}^2 x_i^2\right]\right)$$</p>
 <p>对比二阶多项式模型，FM 的特征交叉权重不独立（通过隐向量共享），是一种参数少但表达力强的模型。这个”隐向量共享交叉权重”的思想后来被深度模型继承：embedding 层本质上就是隐向量的深度版本。</p>
 <h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ol>
 <li>秋千无闻. 逻辑回归 sigmoid 函数的起源——交叉熵. 知乎专栏. <a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/18073080076">https://zhuanlan.zhihu.com/p/18073080076</a></li>
