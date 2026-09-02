@@ -1,0 +1,460 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>A/B 测试从直觉到假设检验的完整技术推演 | ZhangShihang's Blog</title><meta name="author" content="ZhangShihang2"><meta name="copyright" content="ZhangShihang2"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="从双比例 Z 检验的统计量推导、样本量公式、功效分析，到生产环境中的窥探、辛普森悖论等陷阱">
+<meta property="og:type" content="article">
+<meta property="og:title" content="A&#x2F;B 测试从直觉到假设检验的完整技术推演">
+<meta property="og:url" content="https://zhangshihang2.github.io/2026/09/02/ab-test-blog/index.html">
+<meta property="og:site_name" content="ZhangShihang&#39;s Blog">
+<meta property="og:description" content="从双比例 Z 检验的统计量推导、样本量公式、功效分析，到生产环境中的窥探、辛普森悖论等陷阱">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zhangshihang2.github.io/img/butterfly-icon.png">
+<meta property="article:published_time" content="2026-09-02T13:00:00.000Z">
+<meta property="article:modified_time" content="2026-09-02T07:16:30.478Z">
+<meta property="article:author" content="ZhangShihang2">
+<meta property="article:tag" content="A&#x2F;B 测试">
+<meta property="article:tag" content="z检验">
+<meta property="article:tag" content="假设检验">
+<meta property="article:tag" content="统计学">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zhangshihang2.github.io/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "A/B 测试从直觉到假设检验的完整技术推演",
+  "url": "https://zhangshihang2.github.io/2026/09/02/ab-test-blog/",
+  "image": "https://zhangshihang2.github.io/img/butterfly-icon.png",
+  "datePublished": "2026-09-02T13:00:00.000Z",
+  "dateModified": "2026-09-02T07:16:30.478Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ZhangShihang2",
+      "url": "https://zhangshihang2.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://zhangshihang2.github.io/2026/09/02/ab-test-blog/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.7.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'A/B 测试从直觉到假设检验的完整技术推演',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">ZhangShihang's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">A/B 测试从直觉到假设检验的完整技术推演</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">A/B 测试从直觉到假设检验的完整技术推演</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-02T13:00:00.000Z" title="发表于 2026-09-02 21:00:00">2026-09-02</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-09-02T07:16:30.478Z" title="更新于 2026-09-02 15:16:30">2026-09-02</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/">数据分析</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="A-B-测试：从直觉到假设检验的完整技术推演"><a href="#A-B-测试：从直觉到假设检验的完整技术推演" class="headerlink" title="A&#x2F;B 测试：从直觉到假设检验的完整技术推演"></a>A&#x2F;B 测试：从直觉到假设检验的完整技术推演</h1><p>从”为什么要做实验”讲起，一路推到双比例 Z 检验的统计量、样本量公式、功效分析，以及那些在生产环境里真实存在的陷阱。</p>
+<h2 id="一、从一个真实的案例讲归因问题"><a href="#一、从一个真实的案例讲归因问题" class="headerlink" title="一、从一个真实的案例讲归因问题"></a>一、从一个真实的案例讲归因问题</h2><p>2004 年，亚马逊把”用自家信用卡付款能省钱”的提示从首页挪到付款页，并附上具体省钱金额——这个不起眼的改动，每年多赚数千万美元。</p>
+<p>问题在于：**他们是怎么知道的？**如果直接对比”改动前”和”改动后”的转化率，差值里混杂着季节波动、促销活动、竞品动态等一切与改动无关的因素。前后对比无法归因，这是所有观测性数据的通病。</p>
+<p>A&#x2F;B 测试的本质是<strong>随机对照实验（RCT）</strong>：同一时刻，将总体用户随机分为对照组（A，旧版本）与实验组（B，新版本），在满足单变量前提（两组除被测变量外一切相同）的条件下，观测指标差异。此时两组的唯一系统性区别就是被测版本本身，差值可以干净地归因于改动。</p>
+<p>这里”随机”承担了最重的数学职责。设用户有任意维度特征向量 $x$（新老、消费力、活跃度……），随机化保证 $x \perp \text{分组}$，即分组与一切潜在混杂变量独立。于是两组在任意维度上的分布一致（有限样本下近似一致），混杂因素被”平均掉”了。这是因果推断中”随机化可识别因果效应”的直观版本。</p>
+<p>实践中有几个工程约束值得展开。<strong>同时性</strong>：两组必须在同一时间窗口运行，否则时间性混杂（周末效应、节假日）无法抵消。<strong>同质性</strong>：分组需在各维度均衡，验证手段是 A&#x2F;A 测试——两组都跑旧版本，若 A&#x2F;A 之间都能测出”显著差异”，说明分流系统本身有偏。<strong>唯一性</strong>：同一用户只能进一组（否则组间相关性破坏独立性假设）。<strong>同层互斥</strong>：多个实验并行时，同一流量层内一个用户只能命中一个实验，避免交叉污染。</p>
+<h2 id="二、随机波动是无法消除的核心难题"><a href="#二、随机波动是无法消除的核心难题" class="headerlink" title="二、随机波动是无法消除的核心难题"></a>二、随机波动是无法消除的核心难题</h2><p>随机化解决了”公平”，但引入了新的问题：<strong>即使 A、B 两个版本真实效果完全相同，两组样本指标也几乎不可能相等。</strong></p>
+<p>设用户行为为伯努利随机变量 $X_i \sim \text{Bernoulli}(p)$（是否点击、是否转化），样本比例 $\hat{p} &#x3D; \frac{1}{n}\sum X_i$ 是随机变量。由中心极限定理（CLT）：</p>
+<p>$$\hat{p} \approx N\left(p,\ \frac{p(1-p)}{n}\right)$$</p>
+<p>也就是说，即使真实转化率 $p$ 固定不变，每组观测到的 $\hat{p}$ 也会围绕 $p$ 以标准差 $\sqrt{p(1-p)&#x2F;n}$ 的幅度随机波动。两组各有波动，差值 $\hat{p}_1 - \hat{p}_2$ 的波动是它们之和。<strong>样本量再大，波动只会缩小而不会消失</strong>——这就是统计检验必须存在的原因：我们需要一个规则来判断”观测到的差值”到底是信号（真实差异）还是噪声（随机波动）。</p>
+<h2 id="三、假设检验的形式化框架"><a href="#三、假设检验的形式化框架" class="headerlink" title="三、假设检验的形式化框架"></a>三、假设检验的形式化框架</h2><h3 id="3-1-假设的设定"><a href="#3-1-假设的设定" class="headerlink" title="3.1 假设的设定"></a>3.1 假设的设定</h3><p>以”新版转化率 $p_2$ 是否高于旧版 $p_1$”为例，记：</p>
+<p>$$H_0: p_1 \geq p_2 \quad \text{（零假设：新版不比旧版好）}$$<br>$$H_1: p_1 &lt; p_2 \quad \text{（备择假设：新版更好）}$$</p>
+<p>一个容易被忽略的细节：为什么把”没有差异”放在 $H_0$？因为假设检验的逻辑是<strong>证伪</strong>——我们无法直接”证明”两个版本相同，只能寻找足够的证据拒绝”相同”。零假设享有”无罪推定”，证据不足时它默认成立。这决定了后面所有推断的方向：我们计算的都是”在 $H_0$ 为真的世界里，数据有多反常”。</p>
+<h3 id="3-2-检验统计量的推导"><a href="#3-2-检验统计量的推导" class="headerlink" title="3.2 检验统计量的推导"></a>3.2 检验统计量的推导</h3><p>在 $H_0: p_1 &#x3D; p_2 &#x3D; p$ 的临界情形下，考察差值 $\hat{p}_1 - \hat{p}_2$。由 CLT：</p>
+<p>$$\hat{p}_1 - \hat{p}_2 \approx N\left(0,\ p(1-p)\left(\frac{1}{n_1} + \frac{1}{n_2}\right)\right)$$</p>
+<p>标准化的关键是估计分母中的 $p$。由于 $H_0$ 假设两组共享同一转化率，最合理的估计是<strong>合并估计（pooled estimate）</strong>：</p>
+<p>$$\hat{p}_c &#x3D; \frac{X_1 + X_2}{n_1 + n_2}$$</p>
+<p>其中 $X_1, X_2$ 是两组的转化总数。之所以用合并估计而非各自单独估计，是因为在 $H_0$ 下两组来自同一分布，合并样本量 $n_1 + n_2$ 更大，估计方差更小。于是得到双比例 Z 检验统计量：</p>
+<p>$$Z &#x3D; \frac{\hat{p}_1 - \hat{p}_2}{\sqrt{\hat{p}_c(1-\hat{p}_c)\left(\frac{1}{n_1} + \frac{1}{n_2}\right)}} \approx N(0, 1)$$</p>
+<p>一个常见的概念澄清：这里的样本是<strong>由二点分布（伯努利）抽样构成的</strong>，而非”二项分布”。二项分布 $B(n, p)$ 是 $n$ 次伯努利试验总和的分布，而单个用户是否转化是 0-1 变量；我们检验的对象是样本均值（即转化率），它由 CLT 近似正态。区分这一点，方差的写法才不会混乱：单个伯努利观测方差为 $p(1-p)$，样本均值的方差为 $p(1-p)&#x2F;n$。</p>
+<h3 id="3-3-检验方向与拒绝域"><a href="#3-3-检验方向与拒绝域" class="headerlink" title="3.3 检验方向与拒绝域"></a>3.3 检验方向与拒绝域</h3><p>备择假设含 $\neq$ 为双尾检验，含 $&lt;$ 或 $&gt;$ 为单尾检验。本例 $H_1: p_1 &lt; p_2$ 为左尾。给定显著性水平 $\alpha$（通常 0.05），拒绝域为：</p>
+<p>$$Z \leq z_\alpha &#x3D; \Phi^{-1}(0.05) \approx -1.645$$</p>
+<p>其中 $\Phi^{-1}$ 是标准正态分布的分位数函数。等价地，可计算 p 值：</p>
+<p>$$p\text{-value} &#x3D; P(Z \leq z_{\text{obs}} \mid H_0) &#x3D; \Phi(z_{\text{obs}})$$</p>
+<p>当 $p\text{-value} &lt; \alpha$ 时拒绝 $H_0$。两种判据完全等价，p 值只是把”落在拒绝域”翻译成了概率语言。</p>
+<p>由于临界值完全由 $\alpha$ 和检验方向决定，实践中可以直接查表。下表覆盖 A&#x2F;B 测试最常用的几档：</p>
+<p><strong>z 临界值速查表</strong></p>
+<table>
+<thead>
+<tr>
+<th>置信水平</th>
+<th>双侧 $\alpha$</th>
+<th>双侧临界值 $\pm z_{\alpha&#x2F;2}$</th>
+<th>单侧 $\alpha$</th>
+<th>单侧临界值 $z_\alpha$</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>90%</td>
+<td>0.10</td>
+<td>±1.645</td>
+<td>0.10</td>
+<td>1.282</td>
+</tr>
+<tr>
+<td>95%</td>
+<td>0.05</td>
+<td><strong>±1.960</strong></td>
+<td>0.05</td>
+<td><strong>1.645</strong></td>
+</tr>
+<tr>
+<td>98%</td>
+<td>0.02</td>
+<td>±2.326</td>
+<td>0.02</td>
+<td>2.054</td>
+</tr>
+<tr>
+<td>99%</td>
+<td>0.01</td>
+<td><strong>±2.576</strong></td>
+<td>0.01</td>
+<td><strong>2.326</strong></td>
+</tr>
+</tbody></table>
+<p>（加粗的 1.96 与 2.576 是实践中最高频的两档。）使用时把观测到的 $|z|$ 与表对照：双侧 95% 标准下 $|z| \geq 1.96$ 即显著；99% 标准下需 $|z| \geq 2.576$。反过来，z 值也能直接换算双侧 p 值：$|z| &#x3D; 1.645 \to p \approx 0.10$，$|z| &#x3D; 1.96 \to p \approx 0.05$，$|z| &#x3D; 2.576 \to p \approx 0.01$，$|z| &#x3D; 3.29 \to p \approx 0.001$。工程上有个粗略的心算法则：<strong>$|z| &gt; 2$ 大致对应双侧 $p &lt; 0.05$</strong>——这正是”2σ 法则”的出处。</p>
+<p>需要表外置信水平时，用分位数函数现算即可：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> scipy.stats <span class="keyword">import</span> norm</span><br><span class="line">z_95_two_sided = norm.ppf(<span class="number">1</span> - <span class="number">0.05</span>/<span class="number">2</span>)   <span class="comment"># 1.9599...</span></span><br><span class="line">z_99_one_sided = norm.ppf(<span class="number">1</span> - <span class="number">0.01</span>)     <span class="comment"># 2.3263...</span></span><br></pre></td></tr></table></figure>
+
+<p>理解 z 值的物理意义比记数字更重要：<strong>z 度量的是”观测差值距离纯运气的期望（0）有多少个标准误”</strong>。$z &#x3D; 1.96$ 意味着观测差值跑到了运气分布第 97.5 百分位之外——纯运气只有 2.5% 的机会制造这么大的偏离，这正是”95% 置信水平”四个字的数学含义。</p>
+<p>Netflix 的实验团队用过一个抛硬币的思维实验，可以把拒绝域讲得非常具体。想知道一枚硬币是否均匀，抛 100 次统计正面比例：即使硬币完全均匀，也不可能恰好 50 次正面，那偏离多少才算”过分”？在”硬币均匀”的零假设下枚举所有可能结果的概率，把概率之和不超过 5% 的最极端结果圈出来——正面占比低于 40% 或高于 60%——这就是<strong>拒绝域</strong>，边界（40% 和 60%）就是临界值。如果观察到 55% 正面，p 值约 0.32，远未越界，结论是”证据不足以判定硬币不均匀”。</p>
+<p>这里有一个频率学派最容易被忽略、却极其重要的逻辑细节：<strong>“不拒绝 $H_0$”永远不等于”证明 $H_0$ 为真”</strong>。法庭上”无罪”（证据不足）与”无辜”（证明清白）是两回事——55% 正面的硬币，也许再抛 1000 次就能积累出足够的证据判定它不均匀。同理，A&#x2F;B 测试”不显著”只说明当前证据不足，绝不构成”改动无效”的证明。这一条会直接决定后面如何解读”不显著”的实验。</p>
+<h3 id="3-4-手把手从实验数据算出-z-值"><a href="#3-4-手把手从实验数据算出-z-值" class="headerlink" title="3.4 手把手从实验数据算出 z 值"></a>3.4 手把手从实验数据算出 z 值</h3><p>假设你刚跑完一个实验：对照组 5000 人，转化 500（转化率 10.0%）；实验组 5000 人，转化 550（转化率 11.0%）。绝对增量 +1 个百分点，相对提升 +10%。这个增量是运气还是真实？五步算出 z。</p>
+<p><strong>Step 1：写出两组样本比例与观测差值。</strong> $\hat{p}_1 &#x3D; 500&#x2F;5000 &#x3D; 0.100$，$\hat{p}_2 &#x3D; 550&#x2F;5000 &#x3D; 0.110$，观测差值 $\hat{p}_2 - \hat{p}_1 &#x3D; +0.010$。</p>
+<p><strong>Step 2：计算合并比例</strong>（$H_0$ 下两组共享的转化率估计）：</p>
+<p>$\hat{p}_c &#x3D; \frac{X_1 + X_2}{n_1 + n_2} &#x3D; \frac{500 + 550}{10000} &#x3D; 0.105$</p>
+<p><strong>Step 3：计算标准误</strong>（纯运气制造差值的典型幅度）：</p>
+<p>$SE &#x3D; \sqrt{\hat{p}_c(1-\hat{p}_c)\left(\frac{1}{n_1}+\frac{1}{n_2}\right)} &#x3D; \sqrt{0.105 \times 0.895 \times \frac{2}{5000}} &#x3D; \sqrt{0.00003759} \approx 0.00613$</p>
+<p><strong>Step 4：z &#x3D; 观测差值 ÷ 标准误。</strong></p>
+<p>$z &#x3D; \frac{0.010}{0.00613} \approx 1.63$</p>
+<p>**Step 5：对照 3.3 的临界值表下结论。**若实验前的业务假设是”B 只要不低于 A 就值得看”（单尾）：临界值 1.645，$z &#x3D; 1.63$ 差之毫厘，$p \approx 0.052$，不显著；若双侧检验：临界值 1.96，$p \approx 0.10$，明显不显著。</p>
+<p>结论卡在了门槛上——为什么？回头对照 4.2 的样本量公式：基线 10% 的指标要可靠检测 +1% 绝对提升（$\alpha &#x3D; 0.05$ 双侧、功效 80%），每组需要约 14700 人，而这个实验每组只有 5000。运气的射程（$\pm 2 \times SE \approx \pm 1.2%$）足以覆盖观测到的增量，实验根本没有分辨这个量级效应的能力。这正是 4.4 节”低功效实验”的活例：$z &#x3D; 1.63$ 不显著，既不说明改动无效，也不说明有效——它只说明”证据不足”。</p>
+<p>再算一个样本量充足的完整案例（Udacity 新旧页面实验，清洗后约 29 万样本）：旧版 $n_1 &#x3D; 145274$，转化数 $X_1 &#x3D; 17489$，$\hat{p}_1 &#x3D; 0.12039$；新版 $n_2 &#x3D; 145310$，$X_2 &#x3D; 17872$，$\hat{p}_2 &#x3D; 0.12301$。</p>
+<p>合并估计 $\hat{p}_c &#x3D; 0.12170$，代入统计量：</p>
+<p>$Z &#x3D; \frac{0.12039 - 0.12301}{\sqrt{0.12170 \times 0.87830 \times \left(\frac{2}{145292}\right)}} \approx -2.15$</p>
+<p>$z_\alpha &#x3D; -1.645$，$Z &#x3D; -2.15$ 落入拒绝域；对应 p 值 $&#x3D; \Phi(-2.15) \approx 0.0158 &lt; 0.05$。结论：在 5% 显著性水平下拒绝 $H_0$，新版转化率显著高于旧版。</p>
+<p>用 Python 验证（两种等价方式）：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> statsmodels.stats.proportion <span class="keyword">as</span> sp</span><br><span class="line"><span class="comment"># 双比例 Z 检验（输入转化数与总数，内部自动做合并估计）</span></span><br><span class="line">z, p = sp.proportions_ztest([<span class="number">17489</span>, <span class="number">17872</span>], [<span class="number">145274</span>, <span class="number">145310</span>],</span><br><span class="line">                            alternative=<span class="string">&#x27;smaller&#x27;</span>)</span><br><span class="line"><span class="comment"># z ≈ -2.15, p ≈ 0.0158</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 也可以完全按 Step 1-4 手动复现</span></span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line">p1, n1, p2, n2 = <span class="number">500</span>/<span class="number">5000</span>, <span class="number">5000</span>, <span class="number">550</span>/<span class="number">5000</span>, <span class="number">5000</span></span><br><span class="line">pc = (<span class="number">500</span> + <span class="number">550</span>) / <span class="number">10000</span></span><br><span class="line">z_manual = (p2 - p1) / np.sqrt(pc*(<span class="number">1</span>-pc)*(<span class="number">1</span>/n1 + <span class="number">1</span>/n2))   <span class="comment"># ≈ 1.63</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="3-5-从蒙特卡洛视角看-p-值的物理意义"><a href="#3-5-从蒙特卡洛视角看-p-值的物理意义" class="headerlink" title="3.5 从蒙特卡洛视角看 p 值的物理意义"></a>3.5 从蒙特卡洛视角看 p 值的物理意义</h3><p>公式容易掩盖直觉。蒙特卡洛模拟可以把 $H_0$ 的世界直接”演”出来：假设两组转化率相等（都取总样本转化率 $\hat{p}_{all}$），按原始样本量反复重新抽样，看纯运气能制造多大的差值。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line">n_sims = <span class="number">10000</span></span><br><span class="line">diffs = np.empty(n_sims)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(n_sims):</span><br><span class="line">    a = np.random.binomial(<span class="number">1</span>, p_all, n_old).mean()</span><br><span class="line">    b = np.random.binomial(<span class="number">1</span>, p_all, n_new).mean()</span><br><span class="line">    diffs[i] = a - b</span><br><span class="line"></span><br><span class="line"><span class="comment"># 真实观测差值</span></span><br><span class="line">obs_diff = p_old - p_new   <span class="comment"># ≈ -0.00262</span></span><br><span class="line">p_sim = (diffs &lt;= obs_diff).mean()</span><br><span class="line"><span class="comment"># p_sim ≈ 0.016~0.018（随模拟随机性波动）</span></span><br></pre></td></tr></table></figure>
+
+<p>一万次”纯运气”实验中，只有约 1.6%~1.8% 的差值比真实观测更极端——与解析 p 值高度吻合。这揭示了 p 值的本质：**p 值是在”两组真实无差异”的平行世界里，随机波动制造出不低于当前观测极端程度的概率。**所有 z 检验、t 检验公式，本质都是把”模拟一万次”用解析分布一步到位算出来。当样本量小到 CLT 近似可疑、或指标分布诡异（重尾、多峰）时，蒙特卡洛法不依赖任何分布假设，是很好的兜底验证手段。</p>
+<h3 id="3-6-置信区间"><a href="#3-6-置信区间" class="headerlink" title="3.6 置信区间"></a>3.6 置信区间</h3><p>p 值和拒绝域都是从零假设出发的”正向推理”：先假定无差异，再看观测数据有多反常。置信区间（CI）则把问题掉了个头，从观测数据出发反问：**给定这次观测，哪些真实效应值不会让我们拒绝”无差异”？**把这些值连成一个区间，就是置信区间。回到抛硬币的例子：观察到 100 次中 55% 正面，凡真实正面率在 45%~65% 之间的硬币，都不足以被这次观测拒绝——这个范围就是 95% 置信区间。它的频率学派含义需要精确表述：<strong>重复 100 次同样的实验、构造 100 个区间，约有 95 个会覆盖真实值</strong>——描述的是”区间在重复实验中的表现”，而不是”真实值有 95% 概率落在这个区间”（后者是贝叶斯可信区间的语义）。</p>
+<p>对双比例差异，95% 置信区间的标准形式是：</p>
+<p>$\hat{p}_2 - \hat{p}<em>1 \pm z</em>{\alpha&#x2F;2}\sqrt{\frac{\hat{p}_1(1-\hat{p}_1)}{n_1} + \frac{\hat{p}_2(1-\hat{p}_2)}{n_2}}$</p>
+<p>它与 p 值存在严格等价：<strong>当且仅当 95% CI 不覆盖 0 时，p &lt; 0.05</strong>。实践中由此得到快速判据：区间上下限同为正（或同为负），差异方向明确；区间跨过 0，对应”不显著”。但置信区间比 p 值多携带两个关键信息——<strong>效应大小的可能范围</strong>（区间中点即点估计）和<strong>估计的精度</strong>（区间宽度）。一个从 -0.1% 到 +5% 的区间和一个从 1.2% 到 1.8% 的区间，p 值可能都显著，但前者几乎没说出任何东西，后者则给出了相当锋利的结论。</p>
+<p>置信区间的构造也不必依赖正态假设。**Bootstrapping（自助法）**给出一条非参数路线：对原始样本做有放回的重复抽样，每次计算统计量，重复几千次得到统计量的经验分布，直接取 2.5% 和 97.5% 分位数作为区间端点。它与蒙特卡洛模拟共享同一思想内核——用重抽样逼近真分布——区别在于蒙特卡洛是在零假设下”凭空造世界”，Bootstrap 则是”从样本自身再抽样”。对重尾、多峰、离群值敏感的指标（如人均使用时长），Bootstrap 区间往往比正态近似更稳健。</p>
+<h2 id="四、两类错误与统计功效"><a href="#四、两类错误与统计功效" class="headerlink" title="四、两类错误与统计功效"></a>四、两类错误与统计功效</h2><h3 id="4-1-决策矩阵"><a href="#4-1-决策矩阵" class="headerlink" title="4.1 决策矩阵"></a>4.1 决策矩阵</h3><p>假设检验的判定与真实世界组合出四种结果：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>真实：$H_0$ 成立（无差异）</th>
+<th>真实：$H_1$ 成立（有差异）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>判定：拒绝 $H_0$</strong></td>
+<td>第一类错误（假阳性），概率 $\alpha$</td>
+<td>正确检出，概率 $1-\beta$（<strong>功效</strong>）</td>
+</tr>
+<tr>
+<td><strong>判定：不拒绝 $H_0$</strong></td>
+<td>正确，概率 $1-\alpha$</td>
+<td>第二类错误（假阴性），概率 $\beta$</td>
+</tr>
+</tbody></table>
+<p>$\alpha$ 是”冤枉好人”的概率——版本明明没差别却宣布显著；$\beta$ 是”放过真凶”的概率——改动明明有效却因不够显著被放弃。经典统计的约定是<strong>优先锁定 $\alpha$</strong>（0.05 或 0.01），再在约束下尽量提高功效。业界功效标准通常取 80% 或 90%，含义是：若真实效应达到预设幅度，实验有 80%&#x2F;90% 的概率能检出它。</p>
+<h3 id="4-2-样本量公式的推导"><a href="#4-2-样本量公式的推导" class="headerlink" title="4.2 样本量公式的推导"></a>4.2 样本量公式的推导</h3><p>样本量计算回答的问题是反过来的：给定 $\alpha$、目标功效 $1-\beta$、以及希望检测的最小效应 $\delta &#x3D; p_2 - p_1$，每组需要多少样本？</p>
+<p>推导思路：考虑单侧检验（双侧把 $z_\alpha$ 换成 $z_{\alpha&#x2F;2}$）。在 $H_0$（$p_1 &#x3D; p_2 &#x3D; \bar{p}$）下，检验统计量超过临界值 $z_\alpha$ 时拒绝；在 $H_1$（真实差异为 $\delta$）下，我们希望统计量以 $1-\beta$ 的概率超过临界值。两个条件联立：</p>
+<p>$$\delta &#x3D; \left(z_{\alpha} + z_{\beta}\right)\sqrt{\frac{2\bar{p}(1-\bar{p})}{n}} \implies n \approx \frac{\left(z_{\alpha} + z_{\beta}\right)^2 \cdot 2\bar{p}(1-\bar{p})}{\delta^2}$$</p>
+<p>其中 $\bar{p}$ 为两组合并基线率。这个公式值得逐项审视：</p>
+<ul>
+<li><strong>效应 $\delta$ 在分母且带平方</strong>：想检测的效应减半，样本量翻四倍。这是”小效应需要大样本”的精确数学表达；</li>
+<li><strong>$z_\alpha + z_\beta$ 在分子</strong>：把 $\alpha$ 从 0.05 收紧到 0.01（$z_\alpha$ 从 1.645 升到 2.33），或功效从 80% 提到 90%（$z_\beta$ 从 0.84 升到 1.28），样本量都要显著增加；</li>
+<li><strong>基线率 $\bar{p}(1-\bar{p})$ 是噪声项</strong>：转化率越接近 50%，伯努利方差越大，噪声越强，所需样本越多。</li>
+</ul>
+<p>代入数字验证：基线 $p_1 &#x3D; 20%$，希望检测相对提升 10%（$\delta &#x3D; 0.02$，$\bar{p} &#x3D; 0.21$），$\alpha &#x3D; 0.05$ 双侧、功效 80%：</p>
+<p>$$n \approx \frac{(1.96 + 0.84)^2 \times 2 \times 0.21 \times 0.79}{0.02^2} \approx 6500$$</p>
+<p>使用基于 Cohen’s $h$ 效应量（$h &#x3D; 2\arcsin\sqrt{p_2} - 2\arcsin\sqrt{p_1}$）的精确计算（如 <code>statsmodels</code> 的 <code>NormalIndPower().solve_power</code>），结果在 7000~8000 每组的量级，与简化公式一致。一个直观换算：若日流量 5000，这个实验需要跑三到四天才能积累足够样本。</p>
+<h3 id="4-3-MDE-是业务决策而非统计问题"><a href="#4-3-MDE-是业务决策而非统计问题" class="headerlink" title="4.3 MDE 是业务决策而非统计问题"></a>4.3 MDE 是业务决策而非统计问题</h3><p>公式里最敏感的输入是 $\delta$，它的确定<strong>不是统计问题而是业务问题</strong>：改动至少带来多大提升才值得上线？这需要结合开发成本、机会成本反推——比如”季度营收目标需要转化率提升 0.5% 才有意义”，那 MDE 就取 0.5%。微软和谷歌的实验团队有个一致的观察：<strong>那些最终产生巨大影响的改动，单体效应量通常只有 0.5%~2%</strong>，价值来自日复一日的累积。设定一个不切实际的 MDE（如”至少提升 50%”），等于宣布放弃对真实世界的感知能力。</p>
+<h3 id="4-4-低功效实验，不显著不等于无效果"><a href="#4-4-低功效实验，不显著不等于无效果" class="headerlink" title="4.4 低功效实验，不显著不等于无效果"></a>4.4 低功效实验，不显著不等于无效果</h3><p>理解了功效，就能识别一种常见的错误决策：随手分配小流量、跑两三天，看到 $p &gt; 0.05$ 就宣布”改动无效”。正确的解读是二选一：改动真的无效，<strong>或者</strong>改动有效但实验功效不足（相当于用低倍率望远镜找星星，看不到不等于不存在）。判别方法是看置信区间：</p>
+<p>$$\hat{p}_2 - \hat{p}<em>1 \pm z</em>{\alpha&#x2F;2}\sqrt{\frac{\hat{p}_1(1-\hat{p}_1)}{n_1} + \frac{\hat{p}_2(1-\hat{p}_2)}{n_2}}$$</p>
+<p>若置信区间宽到同时覆盖了 0 和有业务意义的值（如 +5%），说明实验根本没有分辨能力，应当补样本而不是下结论。</p>
+<h2 id="五、用效应量与决策超越-p-0-05"><a href="#五、用效应量与决策超越-p-0-05" class="headerlink" title="五、用效应量与决策超越 p &lt; 0.05"></a>五、用效应量与决策超越 p &lt; 0.05</h2><p>p 值只回答”差异是否超出运气”，不回答”差异有多大”。样本量足够大时，任何微小的真实差异都会显著——一亿用户里 0.01% 的差别也能亮起绿灯，但可能毫无业务价值。上文的数值案例就是活例：$p \approx 0.016$ 显著，但效应量 Cohen’s $d$：</p>
+<p>$d &#x3D; \frac{\bar{x}<em>1 - \bar{x}<em>2}{s</em>{\text{pooled}}}, \quad s</em>{\text{pooled}} &#x3D; \sqrt{\frac{(n_1-1)s_1^2 + (n_2-1)s_2^2}{n_1+n_2-2}} \approx -0.008$</p>
+<p>$|d| &lt; 0.01$，属于可忽略的量级。正确的报告姿势是<strong>三件套</strong>：点估计（提升了多少）、置信区间（提升范围的合理边界）、p 值（差异是否超出噪声）。三者缺一都会误导决策。</p>
+<h3 id="5-1-一场”失败”实验的正确打开方式"><a href="#5-1-一场”失败”实验的正确打开方式" class="headerlink" title="5.1 一场”失败”实验的正确打开方式"></a>5.1 一场”失败”实验的正确打开方式</h3><p>来看一个更扎心的方向：<strong>不显著，但可能价值巨大</strong>。某注册流程优化实验，每组 10000 用户：A 组转化率 10.0%，B 组 11.0%，绝对提升 1 个百分点（相对提升 10%）。但 p 值 &#x3D; 0.08 &gt; 0.05，95% 置信区间为 $[-0.13%, +1.93%]$，跨越了 0。按”金科玉律”，团队宣布”不显著，项目下线”。</p>
+<p>这个决策错在哪？ASA（美国统计协会）2016 年的官方声明写得很清楚：<strong>p &gt; 0.05 不能证明原假设为真</strong>——一个 p 值略超阈值的效应完全可能真实存在，只是受限于样本量或方差尚未被检出。正确的表述应该是：”我们未能检测到统计上显著的效应，但数据与最高 1.93% 的绝对提升是一致的；需要更多数据来收窄不确定性。”注意置信区间的<strong>上限</strong>在这里传递了关键信息：真实效果仍有相当概率落在有巨大业务价值的区间内。把”未检出”直接翻译成”无效”，等于亲手扔掉了一个可能价值百万的机会。</p>
+<p>顺带一个技术细节，检验方向的选择会实质性地改变结论：同一组数据，单尾检验 p &#x3D; 0.0419（显著），双尾检验 p &#x3D; 0.0839（不显著）——单尾把全部 5% 的 $\alpha$ 预算压在一侧，对同侧效应更敏感。这带来一条纪律：<strong>单尾还是双尾，必须在看到数据之前、基于业务假设确定</strong>（如”只关心提升，下降就回滚”才可用单尾）。看完数据再挑检验方向，是又一种形式的窥探。</p>
+<h3 id="5-2-用决策三问把统计结果翻译成行动"><a href="#5-2-用决策三问把统计结果翻译成行动" class="headerlink" title="5.2 用决策三问把统计结果翻译成行动"></a>5.2 用决策三问把统计结果翻译成行动</h3><p>那么面对 p &#x3D; 0.08、CI $[-0.13%, +1.93%]$，到底该不该上线？三个问题比”是否显著”更有价值：</p>
+<p>**第一问：置信区间是否排除了 MDE？**若实验前确定的 MDE 是 0.5% 绝对提升，当前区间下限（-0.13%）远低于它、上限（1.93%）又高于它——数据既不能保证达到 MDE，也无法排除达到 MDE 的可能。结论是”不确定，需要更多数据”，而不是”无效”。</p>
+<p>**第二问：区间下界是否排除了灾难性风险？**下限 -0.13% 意味着最坏情况是轻微的负效应。如果业务对任何下降零容忍，这就是风险；如果 0.13% 的潜在损失可以接受，风险就有边界。</p>
+<p>**第三问：基于点估计的期望价值是多少？**一个粗算：点估计 0.9% 提升 × 月活 100 万 × 每个转化用户价值 100 元 &#x3D; <strong>每月 90 万元的期望增量</strong>。拿这个期望收益对比最坏情形的损失，就是一次完整的商业权衡。</p>
+<p>三问走完，答案可能是”继续加样本”，可能是”风险可控、直接上线”，也可能是”放弃”。注意：<strong>最终的决策永远是商业决策，而不是统计决策</strong>——p 值和置信区间只是输入之一，还要与业务上下文、风险承受力、机会成本一起进入决策函数。统计负责量化不确定性，决策负责在不确定性下行动。</p>
+<h2 id="六、实践陷阱，统计上正确结论却翻车"><a href="#六、实践陷阱，统计上正确结论却翻车" class="headerlink" title="六、实践陷阱，统计上正确结论却翻车"></a>六、实践陷阱，统计上正确结论却翻车</h2><h3 id="6-1-多次窥探（Peeking）"><a href="#6-1-多次窥探（Peeking）" class="headerlink" title="6.1 多次窥探（Peeking）"></a>6.1 多次窥探（Peeking）</h3><p>实验跑起来后忍不住每天看 p 值，一旦显著就提前终止——这个几乎不可抗拒的冲动会系统性地摧毁 $\alpha$ 的控制。直觉上，若独立窥探 $k$ 次，至少一次假显著的概率为：</p>
+<p>$$P(\text{至少一次显著}) &#x3D; 1 - (1-\alpha)^k$$</p>
+<p>$k &#x3D; 10$ 时约 40%。实际窥探是累积数据（高度相关），膨胀速度低于独立情形，但 Kohavi 团队的测算仍给出<strong>从 5% 膨胀到约 19%</strong> 的结果。机制在于：小样本阶段统计量方差大、p 值剧烈震荡，”跌破 0.05 就停”等于在随机游走的路径上设了一个只朝有利方向触发的陷阱，把随机波动中的极值固化成了结论。</p>
+<p>工程上的两种正解：<strong>预注册</strong>——实验前锁定假设、主指标、样本量，达到样本量前不做决策性分析，到期一次性判定；<strong>序贯检验</strong>——若业务确需中途监控（如防止事故），使用 SPRT（序贯概率比检验）或 mSPRT 等方法，它们为多次查看设计了递增的显著性边界，保证总错误率可控。两者选一，唯独”随意看、随时停”不可接受。</p>
+<h3 id="6-2-多重检验"><a href="#6-2-多重检验" class="headerlink" title="6.2 多重检验"></a>6.2 多重检验</h3><p>一个实验同时看 10 个指标，或同时跑 10 个实验，全族第一类错误率同样按 $1-(1-\alpha)^m$ 膨胀。修正方法是族错误率控制（Bonferroni：$\alpha_{\text{new}} &#x3D; \alpha&#x2F;m$，简单但保守）或错误发现率控制（Benjamini-Hochberg，功效更高）。更根本的做法是在设计阶段就区分<strong>主指标</strong>（唯一决策依据，享受完整 $\alpha$ 预算）与<strong>辅助&#x2F;护栏指标</strong>（用于观察与监控，不参与决策）。</p>
+<h3 id="6-3-辛普森悖论"><a href="#6-3-辛普森悖论" class="headerlink" title="6.3 辛普森悖论"></a>6.3 辛普森悖论</h3><p>一个真实医疗案例：肾结石疗法 A 对小结石成功率 93%、大结石 73%；疗法 B 分别为 87%、69%——分层看 A 全面占优。但合并后 A 总体 78% &lt; B 总体 83%，结论反转。机制是<strong>混杂变量</strong>（病情严重程度）同时影响分组选择与结果：重症患者更多被分配给 A，拉低了 A 的合并成功率。</p>
+<p>映射到推荐系统场景：新算法对新用户转化率 +10%、对老用户 -5%，若实验组中高转化率的老用户占比更高，整体均值反而显得更优。只看总体指标上线，等于向核心用户群投放慢性毒药。防御性分析是<strong>分层检验</strong>：按关键维度（新老、渠道、平台）切片分别检验，确认效应方向一致；若分层结论与总体打架，总体数字不可信，应优先排查分流均衡性。</p>
+<h3 id="6-4-行为类偏差"><a href="#6-4-行为类偏差" class="headerlink" title="6.4 行为类偏差"></a>6.4 行为类偏差</h3><p><strong>新奇效应</strong>：新版本上线初期因新鲜感产生非稳态高参与，提前结束会高估长期价值；对策是让实验跨越完整活跃周期（至少一周）并观察指标是否随时间衰减。<strong>变化盲区</strong>：反向问题，改动太细微用户未感知，短期看不到效果但长期可能有价值。<strong>网络效应</strong>：社交功能、共享经济、排行榜类产品中，用户行为互相影响（实验组用户会”传染”对照组），独立性假设被破坏；对策是<strong>集群随机化</strong>——以城市、社群为单位整体分组，牺牲统计效率换取组间隔离。<strong>指标博弈（Goodhart 定律）</strong>：”当指标成为目标，它就不再是好指标”——激进的付费弹窗拉高本周付费率，透支长期留存。成熟实验体系用<strong>指标金字塔</strong>（长期 LTV → 中期留存 → 短期转化）加<strong>护栏指标</strong>（投诉率、卸载率）约束实验方向。</p>
+<h2 id="七、大厂实验平台的经验沉淀"><a href="#七、大厂实验平台的经验沉淀" class="headerlink" title="七、大厂实验平台的经验沉淀"></a>七、大厂实验平台的经验沉淀</h2><p>微软实验团队（Kohavi 等）基于数万次实验总结的规律，有几条值得写进团队规范：</p>
+<p>**小改动可以撬动大结果，但方向未必向好。**正例是开头的亚马逊信用卡案例；反例是一次自认为极小的 JavaScript 改动导致 IE7 全量不可点击。小改动 ≠ 小风险，这是用小流量先行实验的核心理由。</p>
+<p><strong>性能是隐形金矿。<strong>Bing 的减速实验显示每慢 100ms 关键指标显著下滑，折算</strong>每加快 100μs 收入提升 0.6%</strong>——对千亿级业务，”微不足道”的延迟优化价值以亿计，而这类规律只能靠实验发现。</p>
+<p>**点击近似守恒，放弃非常顽固。**Bing 删除超千万用户使用的右侧相关搜索后，页面总点击量几乎不变——用户的点击自发迁移到了页面其他位置。让用户”多点击”很难，改变点击的分布相对容易。</p>
+<p>**保持实验简单。**LinkedIn 一次搜索引擎多因子复杂实验因无法归因到具体因子而失败，退回单变量 A&#x2F;B 后才定位到问题。一次实验回答一个问题，是纪律而非保守。</p>
+<p>**三分之一定律。**多家大厂复盘数据一致：约 1&#x2F;3 实验正向、1&#x2F;3 无效果、1&#x2F;3 负向。这不该令人沮丧——它恰恰量化了实验平台的价值：<strong>用最小代价拦截那 2&#x2F;3 的坏想法，本身就是巨大的收益。</strong></p>
+<h2 id="八、结语：从单次实验到实验文化"><a href="#八、结语：从单次实验到实验文化" class="headerlink" title="八、结语：从单次实验到实验文化"></a>八、结语：从单次实验到实验文化</h2><p>回看整条技术链路：随机化保证可归因 → CLT 给出零假设下差值的分布 → 检验统计量把观测差值标准化 → p 值量化其极端程度，置信区间换一个方向框出效应的可能范围 → $\alpha$、$\beta$、样本量、MDE 构成四要素闭环 → 效应量补足”多大”的维度，最终由决策三问把统计证据翻译成行动。每一步都在回答一个具体问题，而所有公式合起来，只做一件事：<strong>把”运气”和”真实”区分开，再把”真实”翻译成”值得”。</strong></p>
+<p>但单次实验永远可能骗人——运气、窥探、混杂、新奇感都在伺机而动。真正可靠的不是某一次检验，而是围绕检验建立的<strong>实验文化</strong>：预注册对抗窥探，A&#x2F;A 测试校准分流，功效分析保证灵敏度，分层分析拆穿悖论，护栏指标守住底线，失败实验归档沉淀。当这些规矩成为制度，运气才真正失去撒谎的空间。</p>
+<p>统计检验是望远镜，不是真理机。它诚实地记录发生的一切，然后安静地等一个懂规矩的人，来问对的问题。</p>
+<hr>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ol>
+<li>《A&#x2F;B 测试的流程、原理与注意事项（含蒙特卡洛法示例）》——知乎专栏（zhuanlan.zhihu.com&#x2F;p&#x2F;68019926）：假设检验流程、双比例 Z 检验数值案例、蒙特卡洛模拟</li>
+<li>《A&#x2F;B 测试中的”坑”：常见误区与规避指南》——腾讯云开发者社区（cloud.tencent.com&#x2F;developer&#x2F;article&#x2F;2570034）：P 值误解、Peeking 膨胀测算、辛普森悖论、行为类偏差</li>
+<li>《样本量计算与统计功效：你的实验真的足够灵敏吗？》——腾讯云开发者社区（cloud.tencent.com&#x2F;developer&#x2F;article&#x2F;2570031）：四要素框架、MDE、功效曲线、Python 实现</li>
+<li>《Ronny Kohavi：网站 A&#x2F;B 测试七大准则》——知乎专栏（zhuanlan.zhihu.com&#x2F;p&#x2F;23911110）：亚马逊&#x2F;Bing&#x2F;LinkedIn 案例</li>
+<li>Kohavi, Tang &amp; Xu, <em>Trustworthy Online Controlled Experiments</em>, Cambridge University Press</li>
+<li>《解读 A&#x2F;B 测试结果：一文看懂 P 值、置信区间与显著性》——腾讯云开发者社区（cloud.tencent.com&#x2F;developer&#x2F;article&#x2F;2570033）：ASA 声明、置信区间 vs p 值、决策三问、单尾双尾对比</li>
+<li>《Netflix 是如何做决策的？——A&#x2F;B 测试结果之假阳性和统计显著性》——腾讯云开发者社区（cloud.tencent.com&#x2F;developer&#x2F;news&#x2F;908024）：抛硬币思维实验、拒绝域与临界值、”无罪≠无辜”</li>
+<li>《AB 试验（六）A&#x2F;B 实验常见知识点的 Python 计算》——腾讯云开发者社区（cloud.tencent.com&#x2F;developer&#x2F;article&#x2F;2351399）：均值&#x2F;概率指标的完整 Python 实现、Bootstrapping、方差齐性检验</li>
+<li>《统计学(3)|AB 测试——实验结果分析》——腾讯云开发者社区（cloud.tencent.com&#x2F;developer&#x2F;article&#x2F;1823464）：P 值、统计功效与置信区间三位一体的结果分析体系</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://zhangshihang2.github.io">ZhangShihang2</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://zhangshihang2.github.io/2026/09/02/ab-test-blog/">https://zhangshihang2.github.io/2026/09/02/ab-test-blog/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://zhangshihang2.github.io" target="_blank">ZhangShihang's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/A-B-%E6%B5%8B%E8%AF%95/">A/B 测试</a><a class="post-meta__tags" href="/tags/%E5%81%87%E8%AE%BE%E6%A3%80%E9%AA%8C/">假设检验</a><a class="post-meta__tags" href="/tags/%E7%BB%9F%E8%AE%A1%E5%AD%A6/">统计学</a><a class="post-meta__tags" href="/tags/z%E6%A3%80%E9%AA%8C/">z检验</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/08/31/weighted-lr-research/" title="Weighted Logistic Regression 调查报告"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Weighted Logistic Regression 调查报告</div></div><div class="info-2"><div class="info-item-1">Weighted Logistic Regression 调查报告 调查主题：YouTube 推荐系统中 Weighted LR 的原理、推导、Serving 方式与应用   一、问题背景YouTube 深度学习推荐系统的 Ranking Model 输出层采用了 Weighted Logistic Regression，且在模型 Serving 时没有使用标准的 sigmoid 函数，而是使用了 $e^{Wx+b}$ 这一指数形式。这一设计引发了广泛讨论：为什么用 Weighted LR？为什么 Serving 时用指数形式而非 sigmoid？预测的到底是什么？ 来源：  揭开YouTube深度推荐系统模型Serving之谜 — 王喆的机器学习笔记 weighted—LR的理解与推广 — Jamest (博客园)   二、LR 基础推导逻辑回归假设数据服从伯努利分布，事件发生概率为 $p$，不发生概率为 $1-p$。 2.1 Odds（几率比）$$Odds &#x3D; \frac{p}{1-p}$$ Odds 表示事件发生与不发生的比值。 2.2 Logit 函数与 LR ...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ZhangShihang2</div><div class="author-info-description">分享推荐系统、机器学习的学习记录与思考过程</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">2</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">8</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#A-B-%E6%B5%8B%E8%AF%95%EF%BC%9A%E4%BB%8E%E7%9B%B4%E8%A7%89%E5%88%B0%E5%81%87%E8%AE%BE%E6%A3%80%E9%AA%8C%E7%9A%84%E5%AE%8C%E6%95%B4%E6%8A%80%E6%9C%AF%E6%8E%A8%E6%BC%94"><span class="toc-text">A&#x2F;B 测试：从直觉到假设检验的完整技术推演</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%BB%8E%E4%B8%80%E4%B8%AA%E7%9C%9F%E5%AE%9E%E7%9A%84%E6%A1%88%E4%BE%8B%E8%AE%B2%E5%BD%92%E5%9B%A0%E9%97%AE%E9%A2%98"><span class="toc-text">一、从一个真实的案例讲归因问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E9%9A%8F%E6%9C%BA%E6%B3%A2%E5%8A%A8%E6%98%AF%E6%97%A0%E6%B3%95%E6%B6%88%E9%99%A4%E7%9A%84%E6%A0%B8%E5%BF%83%E9%9A%BE%E9%A2%98"><span class="toc-text">二、随机波动是无法消除的核心难题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%81%87%E8%AE%BE%E6%A3%80%E9%AA%8C%E7%9A%84%E5%BD%A2%E5%BC%8F%E5%8C%96%E6%A1%86%E6%9E%B6"><span class="toc-text">三、假设检验的形式化框架</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E5%81%87%E8%AE%BE%E7%9A%84%E8%AE%BE%E5%AE%9A"><span class="toc-text">3.1 假设的设定</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E6%A3%80%E9%AA%8C%E7%BB%9F%E8%AE%A1%E9%87%8F%E7%9A%84%E6%8E%A8%E5%AF%BC"><span class="toc-text">3.2 检验统计量的推导</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E6%A3%80%E9%AA%8C%E6%96%B9%E5%90%91%E4%B8%8E%E6%8B%92%E7%BB%9D%E5%9F%9F"><span class="toc-text">3.3 检验方向与拒绝域</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E6%89%8B%E6%8A%8A%E6%89%8B%E4%BB%8E%E5%AE%9E%E9%AA%8C%E6%95%B0%E6%8D%AE%E7%AE%97%E5%87%BA-z-%E5%80%BC"><span class="toc-text">3.4 手把手从实验数据算出 z 值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-%E4%BB%8E%E8%92%99%E7%89%B9%E5%8D%A1%E6%B4%9B%E8%A7%86%E8%A7%92%E7%9C%8B-p-%E5%80%BC%E7%9A%84%E7%89%A9%E7%90%86%E6%84%8F%E4%B9%89"><span class="toc-text">3.5 从蒙特卡洛视角看 p 值的物理意义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-6-%E7%BD%AE%E4%BF%A1%E5%8C%BA%E9%97%B4"><span class="toc-text">3.6 置信区间</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E4%B8%A4%E7%B1%BB%E9%94%99%E8%AF%AF%E4%B8%8E%E7%BB%9F%E8%AE%A1%E5%8A%9F%E6%95%88"><span class="toc-text">四、两类错误与统计功效</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%86%B3%E7%AD%96%E7%9F%A9%E9%98%B5"><span class="toc-text">4.1 决策矩阵</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E6%A0%B7%E6%9C%AC%E9%87%8F%E5%85%AC%E5%BC%8F%E7%9A%84%E6%8E%A8%E5%AF%BC"><span class="toc-text">4.2 样本量公式的推导</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-MDE-%E6%98%AF%E4%B8%9A%E5%8A%A1%E5%86%B3%E7%AD%96%E8%80%8C%E9%9D%9E%E7%BB%9F%E8%AE%A1%E9%97%AE%E9%A2%98"><span class="toc-text">4.3 MDE 是业务决策而非统计问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-%E4%BD%8E%E5%8A%9F%E6%95%88%E5%AE%9E%E9%AA%8C%EF%BC%8C%E4%B8%8D%E6%98%BE%E8%91%97%E4%B8%8D%E7%AD%89%E4%BA%8E%E6%97%A0%E6%95%88%E6%9E%9C"><span class="toc-text">4.4 低功效实验，不显著不等于无效果</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E7%94%A8%E6%95%88%E5%BA%94%E9%87%8F%E4%B8%8E%E5%86%B3%E7%AD%96%E8%B6%85%E8%B6%8A-p-0-05"><span class="toc-text">五、用效应量与决策超越 p &lt; 0.05</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E4%B8%80%E5%9C%BA%E2%80%9D%E5%A4%B1%E8%B4%A5%E2%80%9D%E5%AE%9E%E9%AA%8C%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%89%93%E5%BC%80%E6%96%B9%E5%BC%8F"><span class="toc-text">5.1 一场”失败”实验的正确打开方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E7%94%A8%E5%86%B3%E7%AD%96%E4%B8%89%E9%97%AE%E6%8A%8A%E7%BB%9F%E8%AE%A1%E7%BB%93%E6%9E%9C%E7%BF%BB%E8%AF%91%E6%88%90%E8%A1%8C%E5%8A%A8"><span class="toc-text">5.2 用决策三问把统计结果翻译成行动</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%AE%9E%E8%B7%B5%E9%99%B7%E9%98%B1%EF%BC%8C%E7%BB%9F%E8%AE%A1%E4%B8%8A%E6%AD%A3%E7%A1%AE%E7%BB%93%E8%AE%BA%E5%8D%B4%E7%BF%BB%E8%BD%A6"><span class="toc-text">六、实践陷阱，统计上正确结论却翻车</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E5%A4%9A%E6%AC%A1%E7%AA%A5%E6%8E%A2%EF%BC%88Peeking%EF%BC%89"><span class="toc-text">6.1 多次窥探（Peeking）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E5%A4%9A%E9%87%8D%E6%A3%80%E9%AA%8C"><span class="toc-text">6.2 多重检验</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E8%BE%9B%E6%99%AE%E6%A3%AE%E6%82%96%E8%AE%BA"><span class="toc-text">6.3 辛普森悖论</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-%E8%A1%8C%E4%B8%BA%E7%B1%BB%E5%81%8F%E5%B7%AE"><span class="toc-text">6.4 行为类偏差</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%A4%A7%E5%8E%82%E5%AE%9E%E9%AA%8C%E5%B9%B3%E5%8F%B0%E7%9A%84%E7%BB%8F%E9%AA%8C%E6%B2%89%E6%B7%80"><span class="toc-text">七、大厂实验平台的经验沉淀</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E7%BB%93%E8%AF%AD%EF%BC%9A%E4%BB%8E%E5%8D%95%E6%AC%A1%E5%AE%9E%E9%AA%8C%E5%88%B0%E5%AE%9E%E9%AA%8C%E6%96%87%E5%8C%96"><span class="toc-text">八、结语：从单次实验到实验文化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text">参考</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/02/ab-test-blog/" title="A/B 测试从直觉到假设检验的完整技术推演">A/B 测试从直觉到假设检验的完整技术推演</a><time datetime="2026-09-02T13:00:00.000Z" title="发表于 2026-09-02 21:00:00">2026-09-02</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/31/weighted-lr-research/" title="Weighted Logistic Regression 调查报告">Weighted Logistic Regression 调查报告</a><time datetime="2026-08-31T13:00:00.000Z" title="发表于 2026-08-31 21:00:00">2026-08-31</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By ZhangShihang2</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.0</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.0"></script><script src="/js/main.js?v=5.7.0"></script><div class="js-pjax"><script>(() => {
+  const changeScriptToMath = article => {
+    article.querySelectorAll('script[type^="math/tex"]').forEach(el => {
+      const display = /mode=display/.test(el.type)
+      const node = document.createElement(display ? 'div' : 'span')
+      node.textContent = display
+        ? `$$${el.textContent}$$`
+        : `$${el.textContent}$`
+      el.parentNode.replaceChild(node, el)
+    })
+  }
+
+  const loadMathjax = () => {
+    const article = document.getElementById('article-container')
+    if (!article || article.querySelector('.hbe-container')) return
+    changeScriptToMath(article)
+
+    if (!window.MathJax) {
+      window.MathJax = {
+        loader: {
+          load: [
+            // Four font extension packages (optional)
+            //- '[tex]/bbm',
+            //- '[tex]/bboldx',
+            //- '[tex]/dsfont',
+            '[tex]/mhchem',
+            'ui/lazy'
+          ],
+          paths: {
+            'mathjax-newcm': '[mathjax]/../@mathjax/mathjax-newcm-font',
+
+            //- // Four font extension packages (optional)
+            //- 'mathjax-bbm-extension': '[mathjax]/../@mathjax/mathjax-bbm-font-extension',
+            //- 'mathjax-bboldx-extension': '[mathjax]/../@mathjax/mathjax-bboldx-font-extension',
+            //- 'mathjax-dsfont-extension': '[mathjax]/../@mathjax/mathjax-dsfont-font-extension',
+            'mathjax-mhchem-extension': '[mathjax]/../@mathjax/mathjax-mhchem-font-extension'
+          }
+        },
+        output: {
+          font: 'mathjax-newcm',
+        },
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+          packages: {
+            '[+]': [
+              'mhchem'
+            ]
+          }
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          lazyMargin: '200px',
+          enableMenu: true,
+          menuOptions: {
+            settings: {
+              enrich: false  // Turn off Braille and voice narration text automatic generation
+            }
+          },
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@4.1.3/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.typesetClear()
+      MathJax.typesetPromise([ article ])
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
